@@ -127,6 +127,7 @@ function CelebrityReactions() {
 function VideoCard({ src, title, isActive, onPlayClick, onEnded }: { src: string, title: string, isActive: boolean, onPlayClick: () => void, onEnded: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     if (isActive) {
@@ -144,6 +145,24 @@ function VideoCard({ src, title, isActive, onPlayClick, onEnded }: { src: string
     }
   };
 
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const p = (videoRef.current.currentTime / videoRef.current.duration) * 100;
+      setProgress(p || 0);
+    }
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    if (videoRef.current && videoRef.current.duration) {
+      const bounds = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - bounds.left;
+      const percentage = Math.max(0, Math.min(100, (x / bounds.width) * 100));
+      videoRef.current.currentTime = (percentage / 100) * videoRef.current.duration;
+      setProgress(percentage);
+    }
+  };
+
   return (
     <div
       className="relative w-full aspect-video rounded-2xl overflow-hidden border border-primary/20 shadow-[0_20px_60px_rgba(0,0,0,0.1)] bg-card/20 backdrop-blur-sm cursor-pointer group"
@@ -156,6 +175,7 @@ function VideoCard({ src, title, isActive, onPlayClick, onEnded }: { src: string
         playsInline
         preload="metadata"
         onEnded={onEnded}
+        onTimeUpdate={handleTimeUpdate}
         className="w-full h-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] scale-100 group-hover:scale-[1.02]"
       />
 
@@ -175,6 +195,20 @@ function VideoCard({ src, title, isActive, onPlayClick, onEnded }: { src: string
           onClick={toggleMute}
         >
           {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+        </div>
+      )}
+
+      {isActive && (
+        <div
+          className="absolute bottom-0 left-0 right-0 h-1.5 hover:h-2.5 transition-all bg-black/40 cursor-pointer group/scrubber z-20"
+          onClick={handleSeek}
+        >
+          <div
+            className="h-full bg-[#f5c66d] relative transition-[width] duration-75 ease-linear"
+            style={{ width: `${progress}%` }}
+          >
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover/scrubber:opacity-100 transform translate-x-1/2 transition-opacity" />
+          </div>
         </div>
       )}
     </div>

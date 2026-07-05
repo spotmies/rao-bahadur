@@ -169,12 +169,14 @@ function VideoCard({ src, title, isActive, onPlayClick, onEnded }: { src: string
         <span className="text-gradient-gold font-bold">{title}</span>
       </div>
 
-      <div
-        className="absolute bottom-6 right-6 backdrop-blur-md bg-black/40 border border-white/10 p-2.5 rounded-full text-white shadow-sm hover:bg-black/60 transition-colors z-10"
-        onClick={toggleMute}
-      >
-        {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-      </div>
+      {isActive && (
+        <div
+          className="absolute bottom-6 right-6 backdrop-blur-md bg-black/40 border border-white/10 p-2.5 rounded-full text-white shadow-sm hover:bg-black/60 transition-colors z-10"
+          onClick={toggleMute}
+        >
+          {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+        </div>
+      )}
     </div>
   );
 }

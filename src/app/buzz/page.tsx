@@ -16,8 +16,9 @@ export default function BuzzPage() {
 
   return (
     <div className="min-h-screen flex flex-col pt-28 md:pt-40 pb-12 px-4 container mx-auto space-y-24">
-      <div className="text-center space-y-6">
-        <motion.h1
+      <div className="flex flex-col space-y-8">
+        <div className="text-center space-y-6">
+          <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="font-serif text-4xl md:text-6xl text-foreground uppercase tracking-widest"
@@ -67,6 +68,7 @@ export default function BuzzPage() {
           Book Tickets
         </Button>
       </motion.div>
+      </div>
 
       <div className="space-y-10">
         <h2 className="font-serif text-3xl text-center text-primary">Viral Reactions</h2>

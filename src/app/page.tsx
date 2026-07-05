@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -110,10 +110,18 @@ const CELEBRITY_VIDEOS = [
 ];
 
 function CelebrityReactions() {
-  const [activeVideo, setActiveVideo] = useState(0);
+  const [activeVideo, setActiveVideo] = useState(-1);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
+
+  useEffect(() => {
+    if (isInView && activeVideo === -1) {
+      setActiveVideo(0);
+    }
+  }, [isInView, activeVideo]);
 
   return (
-    <div className="space-y-12 pt-10">
+    <div ref={ref} className="space-y-12 pt-10">
       <div className="flex flex-col items-center mb-12">
         <h3 className="text-accent tracking-[0.3em] text-xs md:text-sm uppercase mb-4 font-semibold">Celebrity Reactions</h3>
         <h2 className="font-serif text-3xl md:text-5xl text-foreground text-center uppercase tracking-wider">They Came. They Saw. They Bowed.</h2>

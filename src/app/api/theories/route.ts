@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     });
 
     // Format for client
-    const formatted = theories.map(t => ({
+    const formatted = theories.map((t: any) => ({
       id: t.id,
       title: t.title,
       excerpt: t.excerpt,

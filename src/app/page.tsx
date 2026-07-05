@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Heart, Star } from "lucide-react";
-import { celebs, reviews, Celeb, Review } from "@/data/mock";
+import { reviews, Review } from "@/data/mock";
 
 function LoveCounter() {
   const [count, setCount] = useState(12438201);
@@ -173,23 +173,23 @@ export default function LandingPage() {
             <h2 className="font-serif text-3xl md:text-5xl text-foreground text-center uppercase tracking-wider">They Came. They Saw. They Bowed.</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {celebs.map((celeb: Celeb) => (
-              <Card key={celeb.id} className="bg-card/20 border-primary/10 backdrop-blur-sm shadow-md">
-                <CardContent className="p-8 flex flex-col space-y-6">
-                  <div className="flex items-center space-x-5">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent/40 to-primary/20 text-foreground flex items-center justify-center font-serif text-xl shadow-inner border border-primary/20">
-                      {celeb.initial}
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="font-serif text-lg text-foreground uppercase tracking-widest">{celeb.name}</div>
-                      <div className="text-xs text-muted-foreground uppercase tracking-widest mt-1">{celeb.role}</div>
-                    </div>
-                  </div>
-                  <blockquote className="text-sm italic text-foreground/80 font-light leading-relaxed">
-                    "{celeb.quote}"
-                  </blockquote>
-                </CardContent>
-              </Card>
+            {[
+              { src: "/Event/Videos/Critics.mp4", title: "Critics" },
+              { src: "/Event/Videos/Hollywood Reporter.mp4", title: "Hollywood Reporter" },
+              { src: "/Event/Videos/RB public Review Plain.mp4", title: "Public Review" },
+              { src: "/Event/Videos/Rahul Ravindran.mp4", title: "Rahul Ravindran" }
+            ].map((video, idx) => (
+              <div key={idx} className="relative rounded-xl overflow-hidden shadow-lg border border-primary/20 bg-card/20 backdrop-blur-sm group">
+                <video 
+                  src={video.src} 
+                  controls 
+                  className="w-full aspect-video object-cover"
+                  preload="metadata"
+                />
+                <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-foreground/90 border border-border/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  {video.title}
+                </div>
+              </div>
             ))}
           </div>
         </div>

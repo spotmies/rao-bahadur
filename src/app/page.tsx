@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Heart, Star } from "lucide-react";
-import { reviews, Review } from "@/data/mock";
+import { Celeb, Review } from "@/data/mock";
 
 function LoveCounter() {
   const [count, setCount] = useState(12438201);
@@ -44,7 +44,7 @@ const celebTweetImages = [
   "/Event/celebrity_tweets/Tweets 23.jpg",
   "/Event/celebrity_tweets/Tweets 27.jpg",
   "/Event/celebrity_tweets/Tweets 28.jpg",
-  
+
   // Fan Tweets
   "/Event/Tweets/Tweets 2.jpg",
   "/Event/Tweets/Tweets 9.jpg",
@@ -180,9 +180,9 @@ export default function LandingPage() {
               { src: "/Event/Videos/Rahul Ravindran.mp4", title: "Rahul Ravindran" }
             ].map((video, idx) => (
               <div key={idx} className="relative rounded-xl overflow-hidden shadow-lg border border-primary/20 bg-card/20 backdrop-blur-sm group">
-                <video 
-                  src={video.src} 
-                  controls 
+                <video
+                  src={video.src}
+                  controls
                   className="w-full aspect-video object-cover"
                   preload="metadata"
                 />
@@ -201,27 +201,18 @@ export default function LandingPage() {
             <h2 className="font-serif text-3xl md:text-5xl text-foreground text-center uppercase tracking-wider">Critics, In Uproar.</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {reviews.map((review: Review) => (
-              <Card key={review.id} className="bg-card/20 border-primary/10 backdrop-blur-sm shadow-md">
-                <CardContent className="p-8 flex flex-col space-y-6">
-                  <div className="flex justify-between items-center">
-                    <div className="font-serif text-lg font-bold text-foreground uppercase tracking-widest">
-                      {review.source}
-                    </div>
-                    <div className="flex space-x-1 text-gradient-gold items-center">
-                      {Array.from({ length: Math.floor(review.stars) }).map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-current" />
-                      ))}
-                      {review.stars % 1 !== 0 && (
-                        <span className="text-base font-bold font-serif pl-1 leading-none">½</span>
-                      )}
-                    </div>
-                  </div>
-                  <blockquote className="text-sm italic text-foreground/80 font-light leading-relaxed">
-                    "{review.snippet}"
-                  </blockquote>
-                </CardContent>
-              </Card>
+            {[
+              "/Event/Tweets/Review 1.jpg",
+              "/Event/Tweets/Review 2.jpg"
+            ].map((imgSrc, idx) => (
+              <div key={idx} className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-lg border border-primary/20 bg-card/20 backdrop-blur-sm group">
+                <Image 
+                  src={imgSrc} 
+                  alt={`Trending Review ${idx + 1}`} 
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                />
+              </div>
             ))}
           </div>
         </div>

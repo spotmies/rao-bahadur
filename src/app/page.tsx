@@ -80,7 +80,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       {/* Hero Section */}
-      <div className="relative w-full h-[100dvh] md:min-h-[90vh] flex flex-col justify-between md:justify-center items-center md:items-start pt-24 pb-12">
+      <div className="relative w-full h-[100dvh] md:min-h-[90vh] flex flex-col justify-between md:justify-center items-center md:items-start pt-12 md:pt-24 pb-8 md:pb-12">
         <div className="absolute inset-0 z-0">
           <Image
             src="/hero-bg.png"
@@ -105,7 +105,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="flex flex-col gap-4 md:gap-6 mt-8 md:mt-0"
+            className="flex flex-col gap-4 md:gap-6 mt-2 md:mt-0"
           >
             <div>
               <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gradient-gold mb-4 uppercase tracking-wider leading-tight drop-shadow-2xl">

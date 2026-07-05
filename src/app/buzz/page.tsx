@@ -81,14 +81,16 @@ export default function BuzzPage() {
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
             >
-              <Button variant="outline" size="lg" className="w-full sm:w-auto min-w-[180px] bg-red-600/10 hover:bg-red-600/20 text-red-500 border-red-500/50 shadow-[0_0_15px_rgba(220,38,38,0.3)] flex items-center gap-3">
-                <img src="https://cdn.aptoide.com/imgs/c/7/9/c7948850a706fca8904015c9809f7ca4_fgraphic.jpg" alt="BookMyShow" className="w-6 h-6 rounded-sm object-cover" />
-                BookMyShow
-              </Button>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto min-w-[180px] bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border-purple-500/50 shadow-[0_0_15px_rgba(147,51,234,0.3)] flex items-center gap-3">
-                <img src="https://media.licdn.com/dms/image/v2/D5612AQENNmUosxgwGA/article-cover_image-shrink_720_1280/B56ZfY173vHoAI-/0/1751689708143?e=2147483647&v=beta&t=sDcVqA3slVmKQ9730YaH69Kde3XpGyEWVK1XoOTdfw4" alt="District" className="w-6 h-6 rounded-sm object-cover" />
-                District
-              </Button>
+              <a href="https://in.bookmyshow.com/movies/rao-bahadur/ET00458566" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto min-w-[180px] p-0 overflow-hidden bg-red-600/10 hover:bg-red-600/20 border-red-500/50 shadow-[0_0_15px_rgba(220,38,38,0.3)] h-14 group">
+                  <img src="https://cdn.aptoide.com/imgs/c/7/9/c7948850a706fca8904015c9809f7ca4_fgraphic.jpg" alt="BookMyShow" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                </Button>
+              </a>
+              <a href="https://www.district.in/movies/rao-bahadur-movie-tickets-MV204022" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto min-w-[180px] p-0 overflow-hidden bg-purple-600/10 hover:bg-purple-600/20 border-purple-500/50 shadow-[0_0_15px_rgba(147,51,234,0.3)] h-14 group">
+                  <img src="https://media.licdn.com/dms/image/v2/D5612AQENNmUosxgwGA/article-cover_image-shrink_720_1280/B56ZfY173vHoAI-/0/1751689708143?e=2147483647&v=beta&t=sDcVqA3slVmKQ9730YaH69Kde3XpGyEWVK1XoOTdfw4" alt="District" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                </Button>
+              </a>
             </motion.div>
           )}
         </motion.div>

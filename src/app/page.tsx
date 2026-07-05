@@ -40,12 +40,12 @@ function LoveCounter() {
 
 function TweetMarquee() {
   return (
-    <div className="w-full overflow-hidden whitespace-nowrap bg-background py-20 border-y border-border/30 relative">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/5 via-background to-background pointer-events-none" />
+    <div className="w-full overflow-hidden whitespace-nowrap py-20 border-y border-border/30 relative">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col items-center mb-12">
-        <h3 className="text-accent tracking-[0.3em] text-xs md:text-sm uppercase mb-4 font-semibold">Fan Buzz</h3>
-        <h2 className="font-serif text-3xl md:text-5xl text-foreground">The Internet Cannot Sit Down</h2>
+      <div className="relative z-10 flex flex-col items-center mb-12 whitespace-normal px-4">
+        <h3 className="text-accent tracking-[0.3em] text-xs md:text-sm uppercase mb-4 font-semibold text-center">Fan Buzz</h3>
+        <h2 className="font-serif text-3xl md:text-5xl text-foreground text-center">The Internet Cannot Sit Down</h2>
       </div>
 
       <motion.div

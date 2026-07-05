@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Cinzel } from "next/font/google";
 import "./globals.css";
 import { FloatingBackButton } from "@/components/ui/FloatingBackButton";
+import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -30,27 +31,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen flex flex-col bg-background text-foreground relative">
-        {/* Progressive Blur Effects */}
-        <div className="progressive-blur-top">
-          <div className="pbt-1"></div>
-          <div className="pbt-2"></div>
-          <div className="pbt-3"></div>
-          <div className="pbt-4"></div>
-          <div className="pbt-5"></div>
-          <div className="pbt-6"></div>
-          <div className="pbt-7"></div>
-          <div className="pbt-8"></div>
-        </div>
-        <div className="progressive-blur-bottom">
-          <div className="pbb-1"></div>
-          <div className="pbb-2"></div>
-          <div className="pbb-3"></div>
-          <div className="pbb-4"></div>
-          <div className="pbb-5"></div>
-          <div className="pbb-6"></div>
-          <div className="pbb-7"></div>
-          <div className="pbb-8"></div>
-        </div>
+        <ProgressiveBlur position="top" />
+        <ProgressiveBlur position="bottom" />
 
         <FloatingBackButton />
         <main className="flex-grow flex flex-col relative z-10">

@@ -201,7 +201,7 @@
 }
 
 /* Progressive Blur */
-@utility progressive-blur-top {
+.progressive-blur-top {
   position: fixed;
   top: 0;
   left: 0;
@@ -211,7 +211,7 @@
   pointer-events: none;
 }
 
-@utility progressive-blur-bottom {
+.progressive-blur-bottom {
   position: fixed;
   bottom: 0;
   left: 0;

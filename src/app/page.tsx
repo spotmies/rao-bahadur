@@ -11,9 +11,25 @@ import { Celeb, Review } from "@/data/mock";
 
 function LoveCounter() {
   const [count, setCount] = useState(12438201);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    const saved = localStorage.getItem("raoBahadurLoveCount");
+    if (saved) {
+      setCount(parseInt(saved, 10));
+    }
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setCount((prev) => prev + Math.floor(Math.random() * 5) + 1);
+      setCount((prev) => {
+        const next = prev + Math.floor(Math.random() * 5) + 1;
+        if (typeof window !== "undefined") {
+          localStorage.setItem("raoBahadurLoveCount", next.toString());
+        }
+        return next;
+      });
     }, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -28,13 +44,57 @@ function LoveCounter() {
           <span className="text-3xl md:text-5xl drop-shadow-[0_0_15px_rgba(255,50,50,0.8)]">❤️</span>
         </motion.div>
         <div className="font-display text-4xl md:text-7xl font-medium tabular-nums text-gold tracking-wide leading-none flex items-center">
-          {count.toLocaleString()}
+          {isClient ? count.toLocaleString() : (12438201).toLocaleString()}
         </div>
       </div>
-      <div className="text-[10px] md:text-sm text-foreground/80 uppercase tracking-widest md:pl-11 font-medium text-center md:text-left">
+      <div className="text-[10px] md:text-sm text-foreground/80 uppercase tracking-widest md:pl-11 font-medium text-center md:text-left mb-2">
         People who entered the world of Rao Bahadur
       </div>
+
+      <div className="md:pl-11 flex justify-center md:justify-start w-full">
+        <HourlySalesIndicator sales={isClient ? 8500 + (count - 12438201) : 8500} />
+      </div>
     </div>
+  );
+}
+
+function HourlySalesIndicator({ sales }: { sales: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5, duration: 0.8 }}
+      className="mt-6 flex flex-wrap items-center gap-4"
+    >
+      <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shadow-lg">
+
+        {/* Overlapping Logos */}
+        <div className="flex items-center -space-x-2">
+          {/* BookMyShow Logo */}
+          <div className="w-7 h-7 rounded-full flex items-center justify-center border-2 border-black z-10 shadow-sm overflow-hidden bg-white">
+            <img src="https://play-lh.googleusercontent.com/TB_8RMvDjxGmx06LBK-8opRFJ0msb6hSZalEtOMBmxgJ4jYE_i0BmdRuMWChCE76tLnxoytZ75Cew_r0_JDd" alt="BookMyShow" className="w-full h-full object-cover" />
+          </div>
+          {/* District App Logo */}
+          <div className="w-7 h-7 rounded-full flex items-center justify-center border-2 border-black z-0 shadow-sm overflow-hidden bg-white">
+            <img src="https://play-lh.googleusercontent.com/t0LH2EDF97k1-d2i8kSh_vUlZlnntAGWRYIX8BVSRSAyMGUlNAraa-q4kez1YMKQmGc_9BeEFGmD3wTud5NDOg=w240-h480-rw" alt="District App" className="w-full h-full object-cover" />
+          </div>
+        </div>
+
+        {/* Hardcoded Typography */}
+        <div className="flex items-center gap-2">
+          {/* Pulsing indicator for a 'live' feel even though it's hardcoded */}
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+          </span>
+
+          <p className="text-sm font-medium text-gray-300 tracking-wide">
+            <span className="text-white font-bold">{sales.toLocaleString()}+</span> tickets sold / hr
+          </p>
+        </div>
+
+      </div>
+    </motion.div>
   );
 }
 

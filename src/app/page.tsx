@@ -231,8 +231,12 @@ export default function LandingPage() {
       </div>
 
       {/* Footer */}
-      <footer className="w-full py-8 text-center text-[10px] sm:text-xs tracking-[0.4em] uppercase text-muted-foreground/60 border-t border-border/10 bg-background/50">
-        A Fan Tribute &middot; Rao Bahadur &middot; Long Live the King
+      <footer className="w-full py-8 text-center text-[10px] sm:text-xs tracking-[0.2em] md:tracking-[0.4em] uppercase text-muted-foreground/60 border-t border-border/10 bg-background/50 flex flex-col md:block gap-3 px-4">
+        <span>A Fan Tribute</span>
+        <span className="hidden md:inline"> &middot; </span>
+        <span>Rao Bahadur</span>
+        <span className="hidden md:inline"> &middot; </span>
+        <span>Long Live the King</span>
       </footer>
     </div >
   );

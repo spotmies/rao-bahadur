@@ -102,7 +102,7 @@ export default function BuzzPage() {
           {Array.from({ length: 15 }).map((_, i) => (
             <div key={i} className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-primary/20 bg-card/10 backdrop-blur-sm group">
               <Image
-                src={`/Event/letterboxd/letterboxd ${i + 1}.jpg`}
+                src={`https://res.cloudinary.com/uohqyl93/image/upload/raobahadur/event/letterboxd/letterboxd_${i + 1}.jpg`}
                 alt={`Viral Reaction ${i + 1}`}
                 width={500}
                 height={800}

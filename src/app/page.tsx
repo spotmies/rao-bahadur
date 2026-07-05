@@ -93,10 +93,10 @@ function TweetMarquee() {
 }
 
 const CELEBRITY_VIDEOS = [
-  { src: "/Event/Videos/Critics.mp4", title: "Critics" },
-  { src: "/Event/Videos/Hollywood Reporter.mp4", title: "Hollywood Reporter" },
-  { src: "/Event/Videos/RB public Review Plain.mp4", title: "Public Review" },
-  { src: "/Event/Videos/Rahul Ravindran.mp4", title: "Rahul Ravindran" }
+  { src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/Critics.mp4", title: "Critics" },
+  { src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/Hollywood_Reporter.mp4", title: "Hollywood Reporter" },
+  { src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/RB_public_Review_Plain.mp4", title: "Public Review" },
+  { src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/Rahul_Ravindran.mp4", title: "Rahul Ravindran" }
 ];
 
 function CelebrityReactions() {

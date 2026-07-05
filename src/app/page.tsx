@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Heart, Star, VolumeX, Volume2 } from "lucide-react";
+import { Heart, Star, VolumeX, Volume2, Play, Pause } from "lucide-react";
 import { Celeb, Review } from "@/data/mock";
 
 function LoveCounter() {
@@ -92,9 +92,49 @@ function TweetMarquee() {
   );
 }
 
-function VideoCard({ src, title }: { src: string, title: string }) {
+const CELEBRITY_VIDEOS = [
+  { src: "/Event/Videos/Critics.mp4", title: "Critics" },
+  { src: "/Event/Videos/Hollywood Reporter.mp4", title: "Hollywood Reporter" },
+  { src: "/Event/Videos/RB public Review Plain.mp4", title: "Public Review" },
+  { src: "/Event/Videos/Rahul Ravindran.mp4", title: "Rahul Ravindran" }
+];
+
+function CelebrityReactions() {
+  const [activeVideo, setActiveVideo] = useState(0);
+
+  return (
+    <div className="space-y-12 pt-10">
+      <div className="flex flex-col items-center mb-12">
+        <h3 className="text-accent tracking-[0.3em] text-xs md:text-sm uppercase mb-4 font-semibold">Celebrity Reactions</h3>
+        <h2 className="font-serif text-3xl md:text-5xl text-foreground text-center uppercase tracking-wider">They Came. They Saw. They Bowed.</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        {CELEBRITY_VIDEOS.map((video, idx) => (
+          <VideoCard 
+            key={idx} 
+            src={video.src} 
+            title={video.title}
+            isActive={activeVideo === idx}
+            onPlayClick={() => setActiveVideo(idx)}
+            onEnded={() => setActiveVideo((idx + 1) % CELEBRITY_VIDEOS.length)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VideoCard({ src, title, isActive, onPlayClick, onEnded }: { src: string, title: string, isActive: boolean, onPlayClick: () => void, onEnded: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+
+  useEffect(() => {
+    if (isActive) {
+      videoRef.current?.play().catch(() => {});
+    } else {
+      videoRef.current?.pause();
+    }
+  }, [isActive]);
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -107,27 +147,33 @@ function VideoCard({ src, title }: { src: string, title: string }) {
   return (
     <div
       className="relative w-full aspect-video rounded-[2.5rem] overflow-hidden border border-primary/20 shadow-[0_20px_60px_rgba(0,0,0,0.1)] bg-card/20 backdrop-blur-sm cursor-pointer group"
-      onClick={toggleMute}
+      onClick={onPlayClick}
     >
       <video
         ref={videoRef}
         src={src}
-        autoPlay
-        loop
         muted={isMuted}
         playsInline
         preload="metadata"
+        onEnded={onEnded}
         className="w-full h-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] scale-100 group-hover:scale-[1.02]"
       />
 
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center justify-center pointer-events-none">
-        <div className={`w-16 h-16 rounded-full backdrop-blur-xl bg-black/40 border border-white/20 flex items-center justify-center text-white transition-all duration-500 ease-out shadow-2xl ${isMuted ? 'scale-100 opacity-100' : 'opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100'}`}>
-          {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+        <div className={`w-16 h-16 rounded-full backdrop-blur-xl bg-black/40 border border-white/20 flex items-center justify-center text-white transition-all duration-500 ease-out shadow-2xl ${isActive ? 'opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100' : 'scale-100 opacity-100'}`}>
+          {isActive ? <Pause size={24} className="fill-current" /> : <Play size={24} className="fill-current ml-1" />}
         </div>
       </div>
 
-      <div className="absolute bottom-6 left-6 backdrop-blur-md bg-black/40 border border-white/10 text-xs font-medium tracking-widest uppercase px-4 py-2 rounded-xl text-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-[800ms] pointer-events-none">
-        <span className="text-gradient-gold mr-2 font-bold">{title}</span> | <span className="ml-2">{isMuted ? "Click to Unmute" : "Playing"}</span>
+      <div className="absolute bottom-6 left-6 backdrop-blur-md bg-black/40 border border-white/10 text-xs font-medium tracking-widest uppercase px-4 py-2 rounded-xl text-white shadow-sm pointer-events-none">
+        <span className="text-gradient-gold font-bold">{title}</span>
+      </div>
+
+      <div 
+        className="absolute bottom-6 right-6 backdrop-blur-md bg-black/40 border border-white/10 p-2.5 rounded-full text-white shadow-sm hover:bg-black/60 transition-colors z-10"
+        onClick={toggleMute}
+      >
+        {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
       </div>
     </div>
   );
@@ -208,22 +254,7 @@ export default function LandingPage() {
 
       <div className="container mx-auto px-4 py-20 space-y-24">
         {/* Celeb Reactions */}
-        <div className="space-y-12 pt-10">
-          <div className="flex flex-col items-center mb-12">
-            <h3 className="text-accent tracking-[0.3em] text-xs md:text-sm uppercase mb-4 font-semibold">Celebrity Reactions</h3>
-            <h2 className="font-serif text-3xl md:text-5xl text-foreground text-center uppercase tracking-wider">They Came. They Saw. They Bowed.</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {[
-              { src: "/Event/Videos/Critics.mp4", title: "Critics" },
-              { src: "/Event/Videos/Hollywood Reporter.mp4", title: "Hollywood Reporter" },
-              { src: "/Event/Videos/RB public Review Plain.mp4", title: "Public Review" },
-              { src: "/Event/Videos/Rahul Ravindran.mp4", title: "Rahul Ravindran" }
-            ].map((video, idx) => (
-              <VideoCard key={idx} src={video.src} title={video.title} />
-            ))}
-          </div>
-        </div>
+        <CelebrityReactions />
 
         {/* Reviews */}
         <div className="space-y-12 pt-10">

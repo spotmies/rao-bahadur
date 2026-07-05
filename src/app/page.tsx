@@ -110,12 +110,12 @@ function CelebrityReactions() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
         {CELEBRITY_VIDEOS.map((video, idx) => (
-          <VideoCard 
-            key={idx} 
-            src={video.src} 
+          <VideoCard
+            key={idx}
+            src={video.src}
             title={video.title}
             isActive={activeVideo === idx}
-            onPlayClick={() => setActiveVideo(idx)}
+            onPlayClick={() => setActiveVideo(activeVideo === idx ? -1 : idx)}
             onEnded={() => setActiveVideo((idx + 1) % CELEBRITY_VIDEOS.length)}
           />
         ))}
@@ -130,7 +130,7 @@ function VideoCard({ src, title, isActive, onPlayClick, onEnded }: { src: string
 
   useEffect(() => {
     if (isActive) {
-      videoRef.current?.play().catch(() => {});
+      videoRef.current?.play().catch(() => { });
     } else {
       videoRef.current?.pause();
     }
@@ -169,7 +169,7 @@ function VideoCard({ src, title, isActive, onPlayClick, onEnded }: { src: string
         <span className="text-gradient-gold font-bold">{title}</span>
       </div>
 
-      <div 
+      <div
         className="absolute bottom-6 right-6 backdrop-blur-md bg-black/40 border border-white/10 p-2.5 rounded-full text-white shadow-sm hover:bg-black/60 transition-colors z-10"
         onClick={toggleMute}
       >

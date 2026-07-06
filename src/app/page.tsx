@@ -160,30 +160,32 @@ function TweetMarquee() {
 const CELEBRITY_VIDEOS = [
   { src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/Sukumar_compressed.mp4", title: "Sukumar" },
   { src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/Naga_Chaitanya_compressed.mp4", title: "Naga Chaitanya" },
-  { src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/Critics.mp4", title: "Critics" },
+  {
+    src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/Rahul_Ravindran.mp4",
+    title: "Rahul Ravindran",
+    poster: "https://res.cloudinary.com/uohqyl93/video/upload/so_7.06/raobahadur/event/videos/Rahul_Ravindran.jpg"
+  },
   {
     src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/Hollywood_Reporter.mp4",
     title: "Hollywood Reporter",
     poster: "https://res.cloudinary.com/uohqyl93/video/upload/so_5.0/raobahadur/event/videos/Hollywood_Reporter.jpg"
   },
-  { src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/RB_public_Review_Plain.mp4", title: "Public Review" },
-  {
-    src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/Rahul_Ravindran.mp4",
-    title: "Rahul Ravindran",
-    poster: "https://res.cloudinary.com/uohqyl93/video/upload/so_7.06/raobahadur/event/videos/Rahul_Ravindran.jpg"
-  }
+  { src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/Critics.mp4", title: "Critics" },
+  { src: "https://res.cloudinary.com/uohqyl93/video/upload/raobahadur/event/videos/RB_public_Review_Plain.mp4", title: "Public Review" }
 ];
 
 function CelebrityReactions() {
   const [activeVideo, setActiveVideo] = useState(-1);
+  const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
 
   useEffect(() => {
-    if (isInView && activeVideo === -1) {
+    if (isInView && !hasAutoPlayed) {
       setActiveVideo(0);
+      setHasAutoPlayed(true);
     }
-  }, [isInView, activeVideo]);
+  }, [isInView, hasAutoPlayed]);
 
   return (
     <div ref={ref} className="space-y-12 pt-10">

@@ -12,26 +12,54 @@ import { Celeb, Review } from "@/data/mock";
 function LoveCounter() {
   const [count, setCount] = useState(12438201);
   const [isClient, setIsClient] = useState(false);
+  const countRef = useRef(12438201);
 
   useEffect(() => {
     setIsClient(true);
-    const saved = localStorage.getItem("raoBahadurLoveCount");
-    if (saved) {
-      setCount(parseInt(saved, 10));
-    }
+    const fetchCounter = async () => {
+      try {
+        const res = await fetch('/api/counter');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.count) {
+            setCount(data.count);
+            countRef.current = data.count;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load counter", err);
+      }
+    };
+    fetchCounter();
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCount((prev) => {
-        const next = prev + Math.floor(Math.random() * 5) + 1;
-        if (typeof window !== "undefined") {
-          localStorage.setItem("raoBahadurLoveCount", next.toString());
+    let timeoutId: NodeJS.Timeout;
+    let ticks = 0;
+
+    const tick = () => {
+      const delay = Math.floor(Math.random() * (7000 - 3000 + 1)) + 3000;
+      timeoutId = setTimeout(() => {
+        countRef.current += Math.floor(Math.random() * 5) + 1;
+        setCount(countRef.current);
+        ticks++;
+
+        // Update DB occasionally (roughly every 15-20 seconds)
+        if (ticks % 3 === 0) {
+          fetch('/api/counter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ count: countRef.current })
+          }).catch(() => { });
         }
-        return next;
-      });
-    }, 3000);
-    return () => clearInterval(interval);
+        
+        tick();
+      }, delay);
+    };
+
+    tick();
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
@@ -41,9 +69,9 @@ function LoveCounter() {
           animate={{ scale: [1, 1.2, 1.1, 1.25, 1] }}
           transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
         >
-          <span className="text-3xl md:text-5xl drop-shadow-[0_0_15px_rgba(255,50,50,0.8)]">❤️</span>
+          <span className="text-4xl md:text-5xl drop-shadow-[0_0_15px_rgba(255,50,50,0.8)]">❤️</span>
         </motion.div>
-        <div className="font-display text-4xl md:text-7xl font-medium tabular-nums text-gold tracking-wide leading-none flex items-center">
+        <div className="font-display text-5xl md:text-7xl font-medium tabular-nums text-gold tracking-wide leading-none flex items-center">
           {isClient ? count.toLocaleString() : (12438201).toLocaleString()}
         </div>
       </div>
@@ -64,7 +92,7 @@ function HourlySalesIndicator({ sales }: { sales: number }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.8 }}
-      className="mt-6 flex flex-wrap items-center gap-4"
+      className="mt-6 flex flex-wrap items-center gap-4 scale-90 md:scale-95 origin-center md:origin-left"
     >
       {/* Subtle Divider */}
       <div className="h-px w-8 bg-gradient-to-r from-transparent via-[#D4AF37]/50 to-transparent"></div>

@@ -165,7 +165,7 @@ export default function CharactersPage() {
         isOpen={showSessionModal}
         onClose={() => setShowSessionModal(false)}
         onSuccess={handleSessionSuccess}
-        message="Enter your identity to join the discussion and vote."
+        message="Enter your identity to join the discussion, like, and post theories."
       />
     </div>
   );

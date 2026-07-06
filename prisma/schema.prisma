@@ -38,3 +38,8 @@ model Character {
   id      String @id
   likes   Int    @default(0)
 }
+
+model GlobalStat {
+  id    String @id @default("counter")
+  count Int    @default(12438201)
+}

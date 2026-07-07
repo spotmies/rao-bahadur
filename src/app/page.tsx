@@ -52,7 +52,7 @@ function LoveCounter() {
             body: JSON.stringify({ count: countRef.current })
           }).catch(() => { });
         }
-        
+
         tick();
       }, delay);
     };

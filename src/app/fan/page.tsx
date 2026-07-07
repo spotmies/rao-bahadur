@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -39,6 +39,7 @@ const getTabIcon = (filterName: string) => {
 function FanPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const tabsRef = useRef<HTMLDivElement>(null);
   const {
     data: theories,
     error,
@@ -154,6 +155,7 @@ function FanPageContent() {
         </div>
       </div>
 
+      <div ref={tabsRef} />
       {/* Sticky Tabs */}
       <div
         className={`sticky top-0 z-50 pt-4 pb-0 mb-4 transition-all duration-300 ${isScrolled
@@ -200,7 +202,14 @@ function FanPageContent() {
           }`}
       >
         <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          onClick={() => {
+            if (tabsRef.current) {
+              const top = tabsRef.current.getBoundingClientRect().top + window.scrollY;
+              window.scrollTo({ top, behavior: "smooth" });
+            } else {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
           className="flex items-center gap-2 bg-gradient-to-r from-[#f5c66d] to-[#e6b150] text-black px-6 py-2 rounded-full font-bold text-[10px] md:text-xs uppercase tracking-widest shadow-[0_4px_20px_rgba(245,198,109,0.3)] hover:shadow-[0_4px_25px_rgba(245,198,109,0.5)] hover:scale-105 transition-all duration-300 backdrop-blur-md border border-[#f5c66d]/20"
         >
           <svg
@@ -326,6 +335,10 @@ function FanPageContent() {
                 <input
                   type="text"
                   autoFocus
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  autoCapitalize="off"
                   placeholder="Search theories, authors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

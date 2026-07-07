@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     // Use cloudinary to sign the request
     const signature = cloudinary.utils.api_sign_request(paramsToSign, process.env.CLOUDINARY_API_SECRET!);
 
-    return NextResponse.json({ signature });
+    return NextResponse.json({ signature, apiKey: process.env.CLOUDINARY_API_KEY });
   } catch (error) {
     console.error('Error generating signature:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

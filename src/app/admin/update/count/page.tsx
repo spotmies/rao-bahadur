@@ -186,14 +186,14 @@ export default function AdminUpdateCountPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paramsToSign }),
       });
-      const { signature } = await signRes.json();
+      const { signature, apiKey } = await signRes.json();
 
       if (!signature) throw new Error("Failed to get signature");
 
       // Upload to Cloudinary
       const formData = new FormData();
       formData.append('file', fileToUpload);
-      formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '');
+      formData.append('api_key', apiKey || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '');
       formData.append('timestamp', timestamp.toString());
       formData.append('signature', signature);
       formData.append('folder', 'raobahadur/event/videos');

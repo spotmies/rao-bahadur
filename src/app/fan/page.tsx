@@ -253,7 +253,7 @@ function FanPageContent() {
 
       {/* Scroll to Top Pill */}
       <div
-        className={`fixed top-24 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-in-out ${isDeepScrolled
+        className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-in-out ${isDeepScrolled
           ? "opacity-100 translate-y-0"
           : "opacity-0 -translate-y-8 pointer-events-none"
           }`}

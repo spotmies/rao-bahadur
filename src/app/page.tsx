@@ -12,6 +12,7 @@ import { Celeb, Review } from "@/data/mock";
 function LoveCounter() {
   const [count, setCount] = useState(12438201);
   const [isClient, setIsClient] = useState(false);
+  const [sales, setSales] = useState(265000);
   const countRef = useRef(12438201);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ function LoveCounter() {
           if (data.count) {
             setCount(data.count);
             countRef.current = data.count;
+            setSales(265000 + (data.count - 12438201));
           }
         }
       } catch (err) {
@@ -31,6 +33,13 @@ function LoveCounter() {
       }
     };
     fetchCounter();
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSales(265000 + (countRef.current - 12438201));
+    }, 30 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -72,7 +81,7 @@ function LoveCounter() {
           <span className="text-4xl md:text-5xl drop-shadow-[0_0_15px_rgba(255,50,50,0.8)]">❤️</span>
         </motion.div>
         <div className="font-display text-5xl md:text-7xl font-medium tabular-nums text-gold tracking-wide leading-none flex items-center">
-          {isClient ? count.toLocaleString() : (12438201).toLocaleString()}
+          {isClient ? count.toLocaleString('en-IN') : (12438201).toLocaleString('en-IN')}
         </div>
       </div>
       <div className="text-[10px] md:text-sm text-foreground/80 uppercase tracking-widest md:pl-11 font-medium text-center md:text-left mb-2">
@@ -80,7 +89,7 @@ function LoveCounter() {
       </div>
 
       <div className="md:pl-11 flex justify-center md:justify-start w-full">
-        <HourlySalesIndicator sales={isClient ? 8500 + (count - 12438201) : 8500} />
+        <HourlySalesIndicator sales={isClient ? sales : 265000} />
       </div>
     </div>
   );
@@ -120,7 +129,7 @@ function HourlySalesIndicator({ sales }: { sales: number }) {
           </span>
 
           <p className="text-sm font-medium text-gray-300 tracking-wide">
-            <span className="text-white font-bold">{sales.toLocaleString()}+</span> tickets sold / hr
+            <span className="text-white font-bold">{sales.toLocaleString('en-IN')}+</span> tickets sold so far
           </p>
         </div>
 

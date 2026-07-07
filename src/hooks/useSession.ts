@@ -1,66 +1,87 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { create } from "zustand";
+
+interface SessionState {
+  username: string | null;
+  isReady: boolean;
+  upvotedIds: string[];
+  savedIds: string[];
+  login: (name: string) => void;
+  logout: () => void;
+  toggleUpvote: (id: string, isUpvoted: boolean) => void;
+  toggleSave: (id: string, isSaved: boolean) => void;
+  hasUpvoted: (id: string) => boolean;
+  hasSaved: (id: string) => boolean;
+  setReady: (username: string | null, upvotedIds: string[], savedIds: string[]) => void;
+}
+
+const useSessionStore = create<SessionState>((set, get) => ({
+  username: null,
+  isReady: false,
+  upvotedIds: [],
+  savedIds: [],
+  setReady: (username, upvotedIds, savedIds) => {
+    set({ username, upvotedIds, savedIds, isReady: true });
+  },
+  login: (name) => {
+    localStorage.setItem("raobahadur_username", name);
+    set({ username: name });
+  },
+  logout: () => {
+    localStorage.removeItem("raobahadur_username");
+    set({ username: null });
+  },
+  toggleUpvote: (id, isUpvoted) => {
+    const { upvotedIds } = get();
+    const next = isUpvoted
+      ? [...new Set([...upvotedIds, id])]
+      : upvotedIds.filter(i => i !== id);
+    localStorage.setItem("raobahadur_upvotes", JSON.stringify(next));
+    set({ upvotedIds: next });
+  },
+  toggleSave: (id, isSaved) => {
+    const { savedIds } = get();
+    const next = isSaved
+      ? [...new Set([...savedIds, id])]
+      : savedIds.filter(i => i !== id);
+    localStorage.setItem("raobahadur_saved", JSON.stringify(next));
+    set({ savedIds: next });
+  },
+  hasUpvoted: (id) => get().upvotedIds.includes(id),
+  hasSaved: (id) => get().savedIds.includes(id),
+}));
 
 export function useSession() {
-  const [username, setUsername] = useState<string | null>(null);
-  const [isReady, setIsReady] = useState(false);
-  const [upvotedIds, setUpvotedIds] = useState<string[]>([]);
-  const [savedIds, setSavedIds] = useState<string[]>([]);
+  const store = useSessionStore();
 
   useEffect(() => {
+    if (store.isReady) return;
+
+    let storedUsername = null;
+    let storedUpvotes: string[] = [];
+    let storedSaved: string[] = [];
+
     const stored = localStorage.getItem("raobahadur_username");
-    if (stored) setUsername(stored);
+    if (stored) storedUsername = stored;
 
-    const storedUpvotes = localStorage.getItem("raobahadur_upvotes");
-    if (storedUpvotes) {
+    const storedUpvotesStr = localStorage.getItem("raobahadur_upvotes");
+    if (storedUpvotesStr) {
       try {
-        setUpvotedIds(JSON.parse(storedUpvotes));
+        storedUpvotes = JSON.parse(storedUpvotesStr);
       } catch (e) { }
     }
 
-    const storedSaved = localStorage.getItem("raobahadur_saved");
-    if (storedSaved) {
+    const storedSavedStr = localStorage.getItem("raobahadur_saved");
+    if (storedSavedStr) {
       try {
-        setSavedIds(JSON.parse(storedSaved));
+        storedSaved = JSON.parse(storedSavedStr);
       } catch (e) { }
     }
 
-    setIsReady(true);
-  }, []);
+    store.setReady(storedUsername, storedUpvotes, storedSaved);
+  }, [store.isReady, store.setReady]);
 
-  const login = (name: string) => {
-    localStorage.setItem("raobahadur_username", name);
-    setUsername(name);
-  };
-
-  const logout = () => {
-    localStorage.removeItem("raobahadur_username");
-    setUsername(null);
-  };
-
-  const toggleUpvote = (id: string, isUpvoted: boolean) => {
-    setUpvotedIds(prev => {
-      const next = isUpvoted
-        ? [...new Set([...prev, id])]
-        : prev.filter(i => i !== id);
-      localStorage.setItem("raobahadur_upvotes", JSON.stringify(next));
-      return next;
-    });
-  };
-
-  const toggleSave = (id: string, isSaved: boolean) => {
-    setSavedIds(prev => {
-      const next = isSaved
-        ? [...new Set([...prev, id])]
-        : prev.filter(i => i !== id);
-      localStorage.setItem("raobahadur_saved", JSON.stringify(next));
-      return next;
-    });
-  };
-
-  const hasUpvoted = (id: string) => upvotedIds.includes(id);
-  const hasSaved = (id: string) => savedIds.includes(id);
-
-  return { username, isReady, login, logout, hasUpvoted, toggleUpvote, hasSaved, toggleSave };
+  return store;
 }

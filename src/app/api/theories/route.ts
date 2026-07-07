@@ -7,6 +7,13 @@ export async function GET(request: Request) {
   const id = searchParams.get("id");
 
   try {
+    const top5Theories = await prisma.theory.findMany({
+      orderBy: { clicks: 'desc' },
+      take: 5,
+      select: { id: true }
+    });
+    const top5Ids = new Set(top5Theories.map(t => t.id));
+
     if (id) {
       const theory = await prisma.theory.findUnique({
         where: { id },
@@ -20,7 +27,9 @@ export async function GET(request: Request) {
         content: theory.content,
         author: theory.author,
         tag: theory.tag,
+        isTrending: top5Ids.has(theory.id),
         upvotes: theory.upvotes,
+        clicks: theory.clicks,
         comments: theory._count.comments,
         createdAt: theory.createdAt.toISOString()
       });
@@ -42,7 +51,9 @@ export async function GET(request: Request) {
       content: t.content,
       author: t.author,
       tag: t.tag,
+      isTrending: top5Ids.has(t.id),
       upvotes: t.upvotes,
+      clicks: t.clicks,
       comments: t._count.comments,
       createdAt: t.createdAt.toISOString()
     }));

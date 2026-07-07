@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 export function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const toggleVisibility = () => {
@@ -25,6 +27,10 @@ export function ScrollToTop() {
       behavior: "smooth",
     });
   };
+
+  if (pathname === "/fan") {
+    return null;
+  }
 
   return (
     <AnimatePresence>

@@ -41,6 +41,13 @@ export default function TheoryPage() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    if (id) {
+      // Record a click/view for this theory
+      fetch(`/api/theories/${id}/click`, { method: 'POST' }).catch(console.error);
+    }
+  }, [id]);
+
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -171,6 +178,11 @@ export default function TheoryPage() {
               <span className="text-xs uppercase tracking-wider px-2 py-1 bg-accent/20 text-accent rounded-sm">
                 {theory.tag}
               </span>
+              {theory.isTrending && (
+                <span className="text-xs uppercase tracking-wider px-2 py-1 bg-[#f5c66d]/20 text-[#f5c66d] rounded-sm font-bold shadow-[0_0_10px_rgba(245,198,109,0.2)]">
+                  TRENDING • Through clicks
+                </span>
+              )}
             </div>
             <h1 className="font-serif text-4xl md:text-5xl text-foreground leading-tight">
               {theory.title}

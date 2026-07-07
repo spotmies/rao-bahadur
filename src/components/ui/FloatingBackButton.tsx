@@ -50,7 +50,7 @@ export function FloatingBackButton() {
           variant="outline"
           size="icon"
           onClick={handleBack}
-          className="w-12 h-12 rounded-full shadow-lg bg-background/50 backdrop-blur-md border-primary/30 hover:bg-primary/20 hover:border-primary transition-all flex items-center justify-center text-primary"
+          className="w-12 h-12 rounded-full shadow-lg bg-background/50 backdrop-blur-md border-primary/30 hover:bg-primary/20 hover:border-primary hover:text-primary transition-all flex items-center justify-center text-primary"
           aria-label="Go back"
         >
           <ArrowLeft className="w-5 h-5" />

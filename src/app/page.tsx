@@ -251,10 +251,10 @@ function CelebrityReactions() {
   const [activeVideo, setActiveVideo] = useState(-1);
   const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
   const [globalMuted, setGlobalMuted] = useState(true);
-  
+
   const { data: videosData } = useSWR('/api/admin/videos', fetcher, { refreshInterval: 5000 });
   const videos: Video[] = Array.isArray(videosData) ? videosData : [];
-  
+
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
 
@@ -388,6 +388,8 @@ function VideoCard({ src, poster, title, isActive, isMuted, onToggleMute, onPlay
 }
 
 export default function LandingPage() {
+  const [selectedReviewImage, setSelectedReviewImage] = useState<string | null>(null);
+
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       {/* Hero Section */}
@@ -453,7 +455,7 @@ export default function LandingPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-full border-primary/30 text-primary hover:bg-primary/10 w-full sm:w-auto"
+                className="rounded-full border-primary/30 text-primary hover:bg-primary/10 w-full sm:w-auto hover:text-primary"
                 onClick={() => document.getElementById('buzz')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 See the Buzz
@@ -480,7 +482,11 @@ export default function LandingPage() {
               "https://res.cloudinary.com/uohqyl93/image/upload/raobahadur/event/tweets/Review_1.jpg",
               "https://res.cloudinary.com/uohqyl93/image/upload/raobahadur/event/tweets/Review_2.jpg"
             ].map((imgSrc, idx) => (
-              <div key={idx} className="relative w-full rounded-xl overflow-hidden shadow-lg border border-primary/20 bg-card/20 backdrop-blur-sm group">
+              <div
+                key={idx}
+                className="relative w-full rounded-xl overflow-hidden shadow-lg border border-primary/20 bg-card/20 backdrop-blur-sm group cursor-pointer"
+                onClick={() => setSelectedReviewImage(imgSrc)}
+              >
                 <Image
                   src={imgSrc}
                   alt={`Trending Review ${idx + 1}`}
@@ -521,6 +527,35 @@ export default function LandingPage() {
         <span className="hidden md:inline"> &middot; </span>
         <span>Join the Conversation</span>
       </footer>
+
+      {selectedReviewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm whitespace-normal"
+          onClick={() => setSelectedReviewImage(null)}
+        >
+          <div
+            className="absolute top-4 right-4 md:top-8 md:right-8 cursor-pointer p-2 bg-black/50 rounded-full text-white hover:bg-black/80 transition-colors z-50"
+            onClick={() => setSelectedReviewImage(null)}
+          >
+            <X size={24} />
+          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="relative w-full max-w-4xl max-h-[90vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={selectedReviewImage}
+              alt="Expanded Review"
+              width={1200}
+              height={800}
+              className="w-auto h-auto max-w-full max-h-[90vh] object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+            />
+          </motion.div>
+        </div>
+      )}
     </div >
   );
 }

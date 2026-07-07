@@ -135,7 +135,7 @@ export default function PostTheoryPage() {
                 <div className="flex items-center gap-4 text-[#f5c66d] text-sm font-medium py-2">
                   <span className="text-muted-foreground shrink-0">Tag:</span>
                   <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                    {["New", "Hidden Detail", "Trending"].map(t => (
+                    {["New", "Hidden Detail"].map(t => (
                       <button
                         key={t}
                         type="button"

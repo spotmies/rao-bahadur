@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import confetti from "canvas-confetti";
 import useSWR from "swr";
 import { Tweet, TweetSkeleton } from "@/components/ui/tweet";
 import { SessionModal } from "@/components/ui/SessionModal";
@@ -35,7 +37,55 @@ const getTabIcon = (filterName: string) => {
       return null;
   }
 };
+const getLevenshteinDistance = (a: string, b: string): number => {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
 
+  const matrix = [];
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          Math.min(
+            matrix[i][j - 1] + 1, // insertion
+            matrix[i - 1][j] + 1 // deletion
+          )
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+};
+
+const checkEasterEggMatch = (query: string) => {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return false;
+
+  const easterEggQueries = [
+    "the insect", "insect",
+    "anumanam penu bootham", "anumanam penu bhutam", "anumanam",
+    "అనుమానం పెను భూతం", "అనుమానం", "పురుగు", "చిన్న పురుగు"
+  ];
+  if (easterEggQueries.includes(normalized)) return true;
+
+  for (const target of easterEggQueries) {
+    // allow 1 typo for small words, up to 3 typos for longer phrases
+    const maxDistance = target.length <= 6 ? 1 : target.length <= 10 ? 2 : 3;
+    if (getLevenshteinDistance(normalized, target) <= maxDistance) {
+      return true;
+    }
+  }
+  return false;
+};
 function FanPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -60,6 +110,35 @@ function FanPageContent() {
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [hideEasterEgg, setHideEasterEgg] = useState(false);
+  const [isTelugu, setIsTelugu] = useState(false);
+
+  useEffect(() => {
+    setHideEasterEgg(false);
+    if (checkEasterEggMatch(searchQuery)) {
+      const fireConfetti = () => {
+        confetti({
+          particleCount: 100,
+          angle: 60,
+          spread: 70,
+          origin: { x: 0 },
+          colors: ['#f5c66d', '#e6b150', '#ffffff']
+        });
+        confetti({
+          particleCount: 100,
+          angle: 120,
+          spread: 70,
+          origin: { x: 1 },
+          colors: ['#f5c66d', '#e6b150', '#ffffff']
+        });
+      };
+
+      fireConfetti();
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+      }
+    }
+  }, [searchQuery]);
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("search-toggled", { detail: isSearchOpen }));
@@ -110,12 +189,28 @@ function FanPageContent() {
   }
 
   if (searchQuery.trim() !== "") {
-    const q = searchQuery.toLowerCase();
+    const queryWords = searchQuery.toLowerCase().trim().split(/\s+/).filter(Boolean);
+
+    const isFuzzyMatch = (text: string, queryWords: string[]) => {
+      if (!text) return false;
+      const lowerText = text.toLowerCase();
+      // If it includes the whole query directly, return true
+      if (lowerText.includes(searchQuery.toLowerCase().trim())) return true;
+
+      const textWords = lowerText.split(/[\s,.\-?!()]+/);
+
+      return queryWords.every(query => {
+        if (lowerText.includes(query)) return true;
+        const maxDistance = query.length <= 4 ? 1 : 2;
+        return textWords.some(word => getLevenshteinDistance(query, word) <= maxDistance);
+      });
+    };
+
     filteredTheories = filteredTheories.filter(
       (t: any) =>
-        t.title.toLowerCase().includes(q) ||
-        t.content.toLowerCase().includes(q) ||
-        t.author.toLowerCase().includes(q),
+        isFuzzyMatch(t.title, queryWords) ||
+        isFuzzyMatch(t.content, queryWords) ||
+        isFuzzyMatch(t.author, queryWords)
     );
   }
 
@@ -436,6 +531,139 @@ function FanPageContent() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Easter Egg Overlay */}
+      <AnimatePresence>
+        {checkEasterEggMatch(searchQuery) && !hideEasterEgg && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-xl p-4"
+            onClick={() => setHideEasterEgg(true)}
+          >
+            <motion.p
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 20 }}
+              className="absolute top-16 md:top-24 left-0 right-0 text-center px-4 text-lg md:text-xl font-bold font-serif text-[#f5c66d] drop-shadow-md z-50 pointer-events-none leading-tight"
+            >
+              You have discovered <br />
+              A hidden easter egg
+            </motion.p>
+            <motion.div
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative max-w-md w-full bg-card/50 border border-[#f5c66d]/20 rounded-3xl p-8 text-center shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the card
+            >
+              {/* Background Glow */}
+              <div className="absolute inset-0 bg-gradient-to-b from-[#f5c66d]/10 to-transparent opacity-50 pointer-events-none" />
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsTelugu(!isTelugu);
+                }}
+                className="absolute top-4 right-4 z-10 p-2 bg-[#f5c66d]/10 hover:bg-[#f5c66d]/20 rounded-full transition-colors text-[#f5c66d]"
+                title="Translate"
+                aria-label="Translate"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m5 8 6 6" />
+                  <path d="m4 14 6-6 2-3" />
+                  <path d="M2 5h12" />
+                  <path d="M7 2h1" />
+                  <path d="m22 22-5-10-5 10" />
+                  <path d="M14 18h6" />
+                </svg>
+              </button>
+
+              <motion.div
+                animate={{
+                  y: [0, -10, 0],
+                  rotate: [0, 2, -2, 0]
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="relative w-32 h-32 mx-auto mb-6"
+              >
+                <Image
+                  src="https://res.cloudinary.com/uohqyl93/image/upload/v1783453448/raobahadur/insect.png"
+                  alt="The Insect"
+                  fill
+                  className="object-contain drop-shadow-[0_0_15px_rgba(245,198,109,0.4)]"
+                />
+              </motion.div>
+
+              <motion.h3
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center justify-center text-[#f5c66d] font-bold tracking-wider uppercase text-lg mb-4"
+              >
+                <div className="flex flex-col items-center gap-1">
+                  <span>Insect of Doubt</span>
+                  <span className="text-sm opacity-80 normal-case tracking-normal">
+                    {isTelugu ? "(అనుమానం పెను భూతం)" : "(Anumanam Penu Bhutam)"}
+                  </span>
+                </div>
+              </motion.h3>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-muted-foreground/90 text-sm text-justify leading-relaxed mb-8 flex flex-col gap-3"
+              >
+                {isTelugu ? (
+                  <>
+                    <p>
+                      ఈ చిన్న పురుగు అనుమానం మరియు సందేహానికి శక్తివంతమైన ప్రతీకగా నిలుస్తుంది. కనిపించకుండా మన చుట్టూ చేరే చిన్న పురుగు ఎలా క్రమంగా అసౌకర్యాన్ని కలిగిస్తుందో, అలాగే ఒక చిన్న అనుమానం కథానాయకుడి మనసులో నిశ్శబ్దంగా ప్రవేశించి, క్రమంగా అతని ఆలోచనలను ఆక్రమిస్తుంది. ఆ అనుమానం పెరుగుతూ, అతని చుట్టూ ఉన్న ప్రతి విషయాన్ని ప్రశ్నించే స్థితికి తీసుకెళ్తుంది.
+                    </p>
+                    <p>
+                      ఈ సూక్ష్మమైన కానీ ప్రభావవంతమైన ప్రతీక ద్వారా దర్శకుడు <a href="https://x.com/mahaisnotanoun" target="_blank" rel="noopener noreferrer" className="text-[#f5c66d] hover:underline" onClick={(e) => e.stopPropagation()}>వెంకటేష్ మహా</a>{" "}ఒక చిన్న సందేహం ఎలా మనిషి ఆలోచనలను, అతని వాస్తవాన్ని పూర్తిగా మార్చగలదో అద్భుతంగా ఆవిష్కరించారు. చివరికి, అదే అనుమానం అతని జీవితంలో అతిపెద్ద శత్రువుగా మారుతుంది.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      The insect serves as a powerful metaphor for doubt and suspicion. Like a tiny insect that quietly slips into your space unnoticed, a single seed of doubt enters the protagonist&apos;s mind, gradually growing until it distorts his perception of reality. What begins as an almost invisible presence slowly consumes his thoughts, making him question everything around him.
+                    </p>
+                    <p>
+                      Through this subtle yet striking symbol, director <a href="https://x.com/mahaisnotanoun" target="_blank" rel="noopener noreferrer" className="text-[#f5c66d] hover:underline" onClick={(e) => e.stopPropagation()}>Venkatesh Maha</a>{" "}masterfully illustrates how the smallest suspicion can evolve into an overwhelming force—reshaping a person&apos;s mind, altering their reality, and becoming their greatest enemy.
+                    </p>
+                  </>
+                )}
+              </motion.div>
+
+              <motion.h4
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="text-[#f5c66d] font-serif text-lg md:text-xl font-bold text-center mb-6"
+              >
+                A Mahasterpiece.
+              </motion.h4>
+
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                onClick={() => setHideEasterEgg(true)}
+                className="px-8 py-3 bg-[#f5c66d]/10 text-[#f5c66d] border border-[#f5c66d]/30 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#f5c66d]/20 transition-colors"
+              >
+                Close
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

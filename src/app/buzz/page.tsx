@@ -11,10 +11,7 @@ import { useState } from "react";
 
 export default function BuzzPage() {
   const [showBookingOptions, setShowBookingOptions] = useState(false);
-  const lockedTheories = theories.filter(t => t.locked).slice(0, 3);
-  if (lockedTheories.length < 3) {
-    lockedTheories.push(...theories.filter(t => !t.locked).slice(0, 3 - lockedTheories.length));
-  }
+
 
   return (
     <div className="min-h-screen flex flex-col pt-28 md:pt-40 pb-12 px-4 container mx-auto space-y-24">
@@ -113,33 +110,7 @@ export default function BuzzPage() {
         </div>
       </div>
 
-      <div className="space-y-10">
-        <div className="text-center space-y-2">
-          <h2 className="font-serif text-3xl text-primary">Trending Theories</h2>
-          <p className="text-muted-foreground">Watch the film to unlock these secrets.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {lockedTheories.map((theory, idx) => (
-            <Card key={idx} className="relative overflow-hidden group bg-card/20 border-border/30">
-              <CardHeader className="blur-sm opacity-50 select-none">
-                <CardTitle className="text-xl">{theory.title}</CardTitle>
-                <CardDescription>By {theory.author}</CardDescription>
-              </CardHeader>
-              <CardContent className="blur-md opacity-30 select-none pb-6">
-                <p className="text-sm line-clamp-3">{theory.body}</p>
-              </CardContent>
 
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/40 backdrop-blur-[2px] transition-all group-hover:bg-background/60">
-                <div className="p-4 rounded-full bg-background/80 mb-4 shadow-lg">
-                  <Lock className="w-8 h-8 text-primary" />
-                </div>
-                <div className="font-serif text-lg text-foreground font-bold">Locked Theory</div>
-                <div className="text-sm text-muted-foreground mt-1">Watch to unlock</div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

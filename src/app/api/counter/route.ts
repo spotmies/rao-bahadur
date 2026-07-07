@@ -4,34 +4,28 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     let stat = await prisma.globalStat.findUnique({
-      where: { id: "counter" }
+      where: { id: "view_counter" }
     });
 
     if (!stat) {
       stat = await prisma.globalStat.create({
-        data: { id: "counter", count: 12438201 }
+        data: { id: "view_counter", count: 51347 }
       });
     }
 
     return NextResponse.json({ count: stat.count });
   } catch (error) {
     console.error("Error fetching counter:", error);
-    return NextResponse.json({ count: 12438201 }, { status: 500 });
+    return NextResponse.json({ count: 51347 }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const { count } = await request.json();
-
-    if (typeof count !== 'number') {
-      return NextResponse.json({ error: "Invalid count" }, { status: 400 });
-    }
-
     const stat = await prisma.globalStat.upsert({
-      where: { id: "counter" },
-      update: { count },
-      create: { id: "counter", count }
+      where: { id: "view_counter" },
+      update: { count: { increment: 1 } },
+      create: { id: "view_counter", count: 51347 }
     });
 
     return NextResponse.json({ count: stat.count });

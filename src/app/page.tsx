@@ -6,69 +6,56 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Heart, Star, VolumeX, Volume2, Play, Pause } from "lucide-react";
+import { Heart, Star, VolumeX, Volume2, Play, Pause, X } from "lucide-react";
 import { Celeb, Review } from "@/data/mock";
 
 function LoveCounter() {
-  const [count, setCount] = useState(12438201);
+  const [count, setCount] = useState(51347);
   const [isClient, setIsClient] = useState(false);
   const [sales, setSales] = useState(265000);
-  const countRef = useRef(12438201);
+  const countRef = useRef(51347);
 
   useEffect(() => {
     setIsClient(true);
-    const fetchCounter = async () => {
+    let mounted = true;
+
+    const incrementCounter = async () => {
       try {
-        const res = await fetch('/api/counter');
+        const res = await fetch('/api/counter', { method: 'POST' });
         if (res.ok) {
           const data = await res.json();
-          if (data.count) {
+          if (data.count && mounted) {
             setCount(data.count);
             countRef.current = data.count;
-            setSales(265000 + (data.count - 12438201));
+            setSales(265000 + (data.count - 51347));
           }
         }
       } catch (err) {
         console.error("Failed to load counter", err);
       }
     };
-    fetchCounter();
-  }, []);
+    incrementCounter();
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSales(265000 + (countRef.current - 12438201));
-    }, 30 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    let ticks = 0;
-
-    const tick = () => {
-      const delay = Math.floor(Math.random() * (7000 - 3000 + 1)) + 3000;
-      timeoutId = setTimeout(() => {
-        countRef.current += Math.floor(Math.random() * 5) + 1;
-        setCount(countRef.current);
-        ticks++;
-
-        // Update DB occasionally (roughly every 15-20 seconds)
-        if (ticks % 3 === 0) {
-          fetch('/api/counter', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ count: countRef.current })
-          }).catch(() => { });
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/counter');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.count && data.count > countRef.current && mounted) {
+            setCount(data.count);
+            countRef.current = data.count;
+            setSales(265000 + (data.count - 51347));
+          }
         }
+      } catch (err) {
+        // Ignore polling errors
+      }
+    }, 3000); // Check every 3 seconds for a real-time feel
 
-        tick();
-      }, delay);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
     };
-
-    tick();
-
-    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
@@ -81,7 +68,14 @@ function LoveCounter() {
           <span className="text-4xl md:text-5xl drop-shadow-[0_0_15px_rgba(255,50,50,0.8)]">❤️</span>
         </motion.div>
         <div className="font-display text-5xl md:text-7xl font-medium tabular-nums text-gold tracking-wide leading-none flex items-center">
-          {isClient ? count.toLocaleString('en-IN') : (12438201).toLocaleString('en-IN')}
+          <motion.span
+            key={count}
+            initial={{ opacity: 0.5, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            {isClient ? count.toLocaleString('en-IN') : (51347).toLocaleString('en-IN')}
+          </motion.span>
         </div>
       </div>
       <div className="text-[10px] md:text-sm text-foreground/80 uppercase tracking-widest md:pl-11 font-medium text-center md:text-left mb-2">
@@ -162,6 +156,8 @@ const SOCIAL_PROOF_IMAGES = [
 ];
 
 function TweetMarquee() {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   return (
     <div id="buzz" className="w-full overflow-hidden whitespace-nowrap py-20 border-y border-border/30 relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent pointer-events-none" />
@@ -171,14 +167,27 @@ function TweetMarquee() {
         <h2 className="font-serif text-3xl md:text-5xl text-foreground text-center">One Film. Countless Reactions.</h2>
       </div>
 
-      <motion.div
+      <style>{`
+        @keyframes marquee-scroll {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+
+      <div
         className="inline-block"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ repeat: Infinity, ease: "linear", duration: 50 }}
+        style={{
+          animation: 'marquee-scroll 120s linear infinite',
+          animationPlayState: selectedImage ? 'paused' : 'running'
+        }}
       >
         <div className="flex space-x-6 px-4 items-center">
           {[...SOCIAL_PROOF_IMAGES, ...SOCIAL_PROOF_IMAGES, ...SOCIAL_PROOF_IMAGES].map((imgSrc, i) => (
-            <div key={`${i}`} className="relative w-[300px] sm:w-[380px] h-auto flex-shrink-0 rounded-xl overflow-hidden border border-primary/20 shadow-lg bg-card/20 backdrop-blur-sm group">
+            <div
+              key={`${i}`}
+              className="relative w-[300px] sm:w-[380px] h-auto flex-shrink-0 rounded-xl overflow-hidden border border-primary/20 shadow-lg bg-card/20 backdrop-blur-sm group cursor-pointer"
+              onClick={() => setSelectedImage(imgSrc)}
+            >
               <Image
                 src={imgSrc}
                 alt="Celebrity Tweet"
@@ -189,7 +198,36 @@ function TweetMarquee() {
             </div>
           ))}
         </div>
-      </motion.div>
+      </div>
+
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm whitespace-normal"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div
+            className="absolute top-4 right-4 md:top-8 md:right-8 cursor-pointer p-2 bg-black/50 rounded-full text-white hover:bg-black/80 transition-colors z-50"
+            onClick={() => setSelectedImage(null)}
+          >
+            <X size={24} />
+          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="relative w-full max-w-4xl max-h-[90vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={selectedImage}
+              alt="Expanded Tweet"
+              width={1200}
+              height={800}
+              className="w-auto h-auto max-w-full max-h-[90vh] object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+            />
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

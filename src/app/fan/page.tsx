@@ -62,6 +62,10 @@ function FanPageContent() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent("search-toggled", { detail: isSearchOpen }));
+  }, [isSearchOpen]);
+
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 100);
       setIsDeepScrolled(window.scrollY > 1500);
@@ -201,6 +205,50 @@ function FanPageContent() {
             })}
           </div>
         </div>
+
+        {/* Search Bar attached under tabs */}
+        <AnimatePresence>
+          {isSearchOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              <div className="container mx-auto px-4 py-2">
+                <div className="relative max-w-2xl mx-auto">
+                  <input
+                    type="text"
+                    autoFocus
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    autoCapitalize="off"
+                    placeholder="Search theories, authors..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-card/90 border border-[#f5c66d]/30 rounded-full py-2 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-[#f5c66d] transition-colors shadow-lg"
+                  />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#f5c66d] pointer-events-none">
+                    <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m21 21-3.5-3.5m2.5-6a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0" />
+                    </svg>
+                  </div>
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-1 bg-[#f5c66d]/10 rounded-full text-[#f5c66d] hover:bg-[#f5c66d]/20 transition-all"
+                      aria-label="Clear search"
+                    >
+                      <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Scroll to Top Pill */}
@@ -330,73 +378,6 @@ function FanPageContent() {
             </div>
           )}
         </div>
-
-        {/* Floating Search Bar */}
-        <AnimatePresence>
-          {isSearchOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="fixed bottom-8 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-[400px] z-[100] shadow-2xl"
-            >
-              <div className="relative">
-                <input
-                  type="text"
-                  autoFocus
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  autoCapitalize="off"
-                  placeholder="Search theories, authors..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-card/80 border border-[#f5c66d]/30 rounded-full py-4 pl-12 pr-12 text-foreground placeholder:text-muted-foreground outline-none focus:border-[#f5c66d] transition-colors backdrop-blur-md shadow-[0_0_30px_rgba(245,198,109,0.15)]"
-                />
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#f5c66d] pointer-events-none">
-                  <svg
-                    width="20"
-                    height="20"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      d="m21 21-3.5-3.5m2.5-6a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0"
-                    />
-                  </svg>
-                </div>
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-1 bg-[#f5c66d]/10 rounded-full text-[#f5c66d] hover:bg-[#f5c66d]/20 hover:scale-110 transition-all"
-                    aria-label="Clear search"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Floating CTA */}
         <AnimatePresence>

@@ -432,7 +432,7 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          <div className="flex flex-col items-center md:items-start mt-auto md:mt-8 gap-8 md:gap-8 w-full">
+          <div className="flex flex-col items-center md:items-start mt-auto md:mt-8 gap-3 md:gap-6 w-full">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

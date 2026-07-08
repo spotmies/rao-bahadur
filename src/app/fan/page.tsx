@@ -188,14 +188,21 @@ function FanPageContent() {
     window.dispatchEvent(new CustomEvent("search-toggled", { detail: isSearchOpen }));
   }, [isSearchOpen]);
 
+  const scrollThresholdRef = useRef(0);
+
   useEffect(() => {
+    // Generate threshold between 2000px (approx 5 theories) and 4000px (approx 10 theories)
+    if (scrollThresholdRef.current === 0) {
+      scrollThresholdRef.current = 2000 + Math.random() * 2000;
+    }
+
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setIsScrolled(scrollY > 100);
       setIsDeepScrolled(scrollY > 1500);
 
       // Normal depth trigger (happens once per session unless dismissed then timer takes over)
-      if (scrollY > 3000 && !marketingShownRef.current && !sessionStorage.getItem("marketing_popup_dismissed")) {
+      if (scrollY > scrollThresholdRef.current && !marketingShownRef.current && !sessionStorage.getItem("marketing_popup_dismissed")) {
         marketingShownRef.current = true;
         setShowMarketingPopup(true);
       }

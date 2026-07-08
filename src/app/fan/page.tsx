@@ -191,9 +191,9 @@ function FanPageContent() {
   const scrollThresholdRef = useRef(0);
 
   useEffect(() => {
-    // Generate threshold between 2000px (approx 5 theories) and 4000px (approx 10 theories)
+    // Generate threshold between 1200px (approx 3 theories) and 2000px (approx 5 theories)
     if (scrollThresholdRef.current === 0) {
-      scrollThresholdRef.current = 2000 + Math.random() * 2000;
+      scrollThresholdRef.current = 1200 + Math.random() * 800;
     }
 
     const handleScroll = () => {

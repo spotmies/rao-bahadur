@@ -131,7 +131,7 @@ export default function TheoryPage() {
   const pillRef = useRef<HTMLDivElement>(null);
 
   const [isEditingTheory, setIsEditingTheory] = useState(false);
-  const [showMarketingPill, setShowMarketingPill] = useState(false);
+  const [showMarketingPill, setShowMarketingPill] = useState(true);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
@@ -159,16 +159,7 @@ export default function TheoryPage() {
     }
   };
 
-  useEffect(() => {
-    if (theory) {
-      const isTrending = theory.isTrending || theory.isTrendingThroughLikes || theory.isTrendingThroughReplies || theory.tag?.toLowerCase() === "trending";
-      if (isTrending) {
-        setShowMarketingPill(true);
-      } else {
-        setShowMarketingPill(Math.random() < 0.3);
-      }
-    }
-  }, [theory]);
+
 
   useEffect(() => {
     const timer = setTimeout(() => {

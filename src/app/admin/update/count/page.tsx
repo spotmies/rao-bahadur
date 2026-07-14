@@ -4,9 +4,16 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
-import { Trash2, GripVertical, Upload, Film, BarChart3, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { Trash2, GripVertical, Upload, Film, BarChart3, AlertCircle, Image as ImageIcon, X } from 'lucide-react';
 import Image from 'next/image';
 import { useUploadThing, uploadFiles } from "@/lib/uploadthing";
+
+type DynamicImage = {
+  id: string;
+  category: string;
+  src: string;
+  order: number;
+};
 
 type Video = {
   id: string;
@@ -24,7 +31,18 @@ export default function AdminUpdateCountPage() {
     },
   });
 
-  const [activeTab, setActiveTab] = useState<"stats" | "videos">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "videos" | "tweets" | "letterbox" | "critics">("stats");
+
+  // Images State
+  const [images, setImages] = useState<DynamicImage[]>([]);
+  const [loadingImages, setLoadingImages] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<"TWEETS" | "LETTERBOX" | "CRITICS">("TWEETS");
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageUploadMessage, setImageUploadMessage] = useState("");
+  const [hasUnsavedImageChanges, setHasUnsavedImageChanges] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [savingImageOrder, setSavingImageOrder] = useState(false);
 
   // Counters State
   const [count, setCount] = useState<number | "">("");
@@ -67,6 +85,9 @@ export default function AdminUpdateCountPage() {
 
     // Load Videos
     fetchVideos();
+    
+    // Load Images
+    fetchImages();
 
     // Load FFmpeg
     loadFfmpeg();
@@ -115,6 +136,23 @@ export default function AdminUpdateCountPage() {
       setLoadingVideos(false);
     }
   };
+
+  const fetchImages = async (category = selectedCategory) => {
+    setLoadingImages(true);
+    try {
+      const res = await fetch(`/api/admin/images?category=${category}`);
+      const data = await res.json();
+      if (Array.isArray(data)) setImages(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchImages(selectedCategory);
+  }, [selectedCategory]);
 
   const handleStatsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -319,12 +357,104 @@ export default function AdminUpdateCountPage() {
     dragItemIndexRef.current = null;
   };
 
+  const handleImageDragEnter = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    const dragIndex = dragItemIndexRef.current;
+    if (dragIndex === null || dragIndex === index) return;
+
+    setImages(prev => {
+      const newImages = [...prev];
+      const draggedItem = newImages[dragIndex];
+      newImages.splice(dragIndex, 1);
+      newImages.splice(index, 0, draggedItem);
+      return newImages;
+    });
+
+    dragItemIndexRef.current = index;
+    setDraggedItemIndex(index);
+    setHasUnsavedImageChanges(true);
+  };
+
+  const handleImageUpload = async () => {
+    if (newImageFiles.length === 0) return;
+    setUploadingImage(true);
+    setImageUploadMessage(`Uploading ${newImageFiles.length} image(s)...`);
+
+    try {
+      const res = await uploadFiles("imageUploader", { files: newImageFiles });
+      if (!res || res.length === 0) throw new Error("Upload failed");
+      
+      setImageUploadMessage("Saving to database...");
+
+      await Promise.all(res.map(r => 
+        fetch('/api/admin/images', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category: selectedCategory, src: r.url }),
+        })
+      ));
+
+      setNewImageFiles([]);
+      await fetchImages(selectedCategory);
+      setImageUploadMessage("Upload complete!");
+      setTimeout(() => setImageUploadMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      setImageUploadMessage("Error uploading image");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleDeleteImage = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this image?")) return;
+    try {
+      await fetch(`/api/admin/images?id=${id}`, { method: 'DELETE' });
+      await fetchImages(selectedCategory);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete image");
+    }
+  };
+
+  const moveImage = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === images.length - 1) return;
+    const newImages = [...images];
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    const temp = newImages[index];
+    newImages[index] = newImages[swapIndex];
+    newImages[swapIndex] = temp;
+    setImages(newImages);
+    setHasUnsavedImageChanges(true);
+  };
+
+  const saveImageOrder = async () => {
+    setSavingImageOrder(true);
+    const updatedItems = images.map((img, i) => ({ ...img, order: i }));
+    try {
+      await fetch('/api/admin/images', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reorder: true, items: updatedItems.map(v => ({ id: v.id, order: v.order })) })
+      });
+      setImages(updatedItems);
+      setHasUnsavedImageChanges(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save order");
+      await fetchImages(selectedCategory);
+    } finally {
+      setSavingImageOrder(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8 pt-24 md:pt-32 pb-24 md:pb-32">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-4xl font-serif font-bold mb-8 text-gradient-gold">Dashboard</h1>
 
-        <div className="flex space-x-4 mb-8 border-b border-border/50 pb-2">
+        <div className="flex flex-wrap gap-2 mb-8 border-b border-border/50 pb-2">
           <button
             onClick={() => setActiveTab("stats")}
             className={`flex items-center space-x-2 px-4 py-2 rounded-t-lg transition-colors ${activeTab === "stats" ? "bg-primary/20 text-primary border-b-2 border-primary" : "text-foreground/70 hover:text-foreground"}`}
@@ -338,6 +468,27 @@ export default function AdminUpdateCountPage() {
           >
             <Film size={20} />
             <span>Celebrity Videos</span>
+          </button>
+          <button
+            onClick={() => { setActiveTab("tweets"); setSelectedCategory("TWEETS"); }}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-t-lg transition-colors ${activeTab === "tweets" ? "bg-primary/20 text-primary border-b-2 border-primary" : "text-foreground/70 hover:text-foreground"}`}
+          >
+            <ImageIcon size={20} />
+            <span>Tweets</span>
+          </button>
+          <button
+            onClick={() => { setActiveTab("letterbox"); setSelectedCategory("LETTERBOX"); }}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-t-lg transition-colors ${activeTab === "letterbox" ? "bg-primary/20 text-primary border-b-2 border-primary" : "text-foreground/70 hover:text-foreground"}`}
+          >
+            <ImageIcon size={20} />
+            <span>Letterbox</span>
+          </button>
+          <button
+            onClick={() => { setActiveTab("critics"); setSelectedCategory("CRITICS"); }}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-t-lg transition-colors ${activeTab === "critics" ? "bg-primary/20 text-primary border-b-2 border-primary" : "text-foreground/70 hover:text-foreground"}`}
+          >
+            <ImageIcon size={20} />
+            <span>Critics</span>
           </button>
         </div>
 
@@ -374,6 +525,92 @@ export default function AdminUpdateCountPage() {
                 {statsMessage && <p className="text-center mt-4 text-sm text-primary">{statsMessage}</p>}
               </form>
             )}
+          </div>
+        )}
+
+        {["tweets", "letterbox", "critics"].includes(activeTab) && (
+          <div className="space-y-8">
+            <div className="bg-card/20 backdrop-blur-md border border-primary/20 p-6 rounded-2xl shadow-xl flex flex-col gap-4">
+
+              <div className="flex-1 relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      setNewImageFiles(Array.from(e.target.files));
+                    }
+                  }}
+                  disabled={uploadingImage}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+                />
+                <Button variant="outline" className={`w-full py-6 rounded-xl flex items-center justify-center space-x-2 ${newImageFiles.length > 0 ? 'border-primary text-primary' : ''}`} disabled={uploadingImage}>
+                  <ImageIcon size={20} />
+                  <span>{newImageFiles.length > 0 ? `${newImageFiles.length} Image(s) Selected` : "Select Images"}</span>
+                </Button>
+              </div>
+              <Button
+                variant="regal"
+                className="w-full py-6 rounded-xl flex items-center justify-center space-x-2 mt-2"
+                disabled={uploadingImage || newImageFiles.length === 0}
+                onClick={handleImageUpload}
+              >
+                <Upload size={20} />
+                <span>{uploadingImage ? "Uploading..." : "Upload New Images"}</span>
+              </Button>
+            </div>
+            
+            {imageUploadMessage && (
+              <div className="bg-background/80 border border-primary/50 p-4 rounded-xl text-sm font-medium text-center">
+                {imageUploadMessage}
+              </div>
+            )}
+
+            <div className="bg-card/20 backdrop-blur-md border border-primary/20 rounded-2xl shadow-xl overflow-hidden">
+              <div className="p-4 border-b border-border/20 bg-background/30 font-semibold flex items-center justify-between">
+                <span>Manage {selectedCategory} ({images.length})</span>
+                {hasUnsavedImageChanges && (
+                  <Button onClick={saveImageOrder} disabled={savingImageOrder} className="h-8">
+                    {savingImageOrder ? "Saving..." : "Save Order"}
+                  </Button>
+                )}
+              </div>
+              
+              {loadingImages ? (
+                <div className="p-8 text-center">Loading images...</div>
+              ) : images.length === 0 ? (
+                <div className="p-8 text-center text-foreground/50">No images in this category yet.</div>
+              ) : (
+                <div className="divide-y divide-border/20">
+                  {images.map((img, index) => (
+                    <div
+                      key={img.id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragEnter={(e) => handleImageDragEnter(e, index)}
+                      onDragOver={handleDragOver}
+                      onDragEnd={handleDragEnd}
+                      className={`p-4 flex items-center gap-4 hover:bg-white/5 transition-colors group cursor-grab active:cursor-grabbing ${draggedItemIndex === index ? 'opacity-50 border-2 border-dashed border-primary/50' : ''}`}
+                    >
+                      <div className="flex flex-col space-y-1">
+                        <button onClick={() => moveImage(index, 'up')} disabled={index === 0} className="p-1 text-foreground/40 hover:text-primary disabled:opacity-30">▲</button>
+                        <button onClick={() => moveImage(index, 'down')} disabled={index === images.length - 1} className="p-1 text-foreground/40 hover:text-primary disabled:opacity-30">▼</button>
+                      </div>
+                      <div className="w-24 h-16 bg-black rounded-md overflow-hidden relative flex-shrink-0 border border-border/50">
+                        <img src={img.src} alt="Upload" className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setPreviewImage(img.src)} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-foreground/50 truncate">{img.src}</p>
+                      </div>
+                      <button onClick={() => handleDeleteImage(img.id)} className="p-2 text-red-500/70 hover:text-red-500 hover:bg-red-500/10 rounded-lg">
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -496,9 +733,9 @@ export default function AdminUpdateCountPage() {
 
                       <div className="w-24 h-16 bg-black rounded-md overflow-hidden relative flex-shrink-0 border border-border/50">
                         {video.poster ? (
-                          <img src={video.poster} alt={video.title} className="w-full h-full object-cover" />
+                          <img src={video.poster} alt={video.title} className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setPreviewImage(video.poster!)} />
                         ) : (
-                          <img src={video.src.replace('.mp4', '.jpg')} alt={video.title} className="w-full h-full object-cover" />
+                          <img src={video.src.replace('.mp4', '.jpg')} alt={video.title} className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setPreviewImage(video.src.replace('.mp4', '.jpg'))} />
                         )}
                       </div>
 
@@ -522,6 +759,25 @@ export default function AdminUpdateCountPage() {
           </div>
         )}
       </div>
+
+      {previewImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setPreviewImage(null)}>
+          <div className="relative max-w-5xl max-h-[90vh] w-full flex items-center justify-center">
+            <button 
+              className="absolute -top-12 right-0 p-2 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full transition-all"
+              onClick={() => setPreviewImage(null)}
+            >
+              <X size={24} />
+            </button>
+            <img 
+              src={previewImage} 
+              alt="Preview" 
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl border border-white/10" 
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

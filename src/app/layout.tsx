@@ -16,6 +16,7 @@ const cinzel = Cinzel({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.raobahadur.in"),
   title: {
     default: "I Root for Rao Bahadur | Fan Tribute",
     template: "%s | I Root for Rao Bahadur",

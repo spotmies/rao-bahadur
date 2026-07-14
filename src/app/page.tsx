@@ -165,6 +165,9 @@ const SOCIAL_PROOF_IMAGES = [
 function TweetMarquee() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+  const { data: imagesData } = useSWR('/api/admin/images?category=TWEETS', fetcher, { refreshInterval: 5000 });
+  const tweets = Array.isArray(imagesData) && imagesData.length > 0 ? imagesData.map(img => img.src) : SOCIAL_PROOF_IMAGES;
+
   return (
     <div id="buzz" className="w-full overflow-hidden whitespace-nowrap py-20 border-y border-border/30 relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent pointer-events-none" />
@@ -189,7 +192,7 @@ function TweetMarquee() {
         }}
       >
         <div className="flex space-x-6 px-4 items-center">
-          {[...SOCIAL_PROOF_IMAGES, ...SOCIAL_PROOF_IMAGES, ...SOCIAL_PROOF_IMAGES].map((imgSrc, i) => (
+          {[...tweets, ...tweets, ...tweets].map((imgSrc, i) => (
             <div
               key={`${i}`}
               className="relative w-[300px] sm:w-[380px] h-auto flex-shrink-0 rounded-xl overflow-hidden border border-primary/20 shadow-lg bg-card/20 backdrop-blur-sm group cursor-pointer"
@@ -390,6 +393,12 @@ function VideoCard({ src, poster, title, isActive, isMuted, onToggleMute, onPlay
 export default function LandingPage() {
   const [selectedReviewImage, setSelectedReviewImage] = useState<string | null>(null);
 
+  const { data: criticsData } = useSWR('/api/admin/images?category=CRITICS', fetcher, { refreshInterval: 5000 });
+  const critics = Array.isArray(criticsData) && criticsData.length > 0 ? criticsData.map(img => img.src) : [
+    "https://utfs.io/f/630795fghEPY6K1V3DfghEPYBJkn0CZRDSwTVzqGy4pxQKFe",
+    "https://utfs.io/f/630795fghEPY4KQb4M8LonUxzpby6mCNg2fQ3stjYiZIwMEk"
+  ];
+
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       {/* Hero Section */}
@@ -478,10 +487,7 @@ export default function LandingPage() {
             <h2 className="font-serif text-3xl md:text-5xl text-foreground text-center uppercase tracking-wider">Critics, In Uproar.</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {[
-              "https://utfs.io/f/630795fghEPY6K1V3DfghEPYBJkn0CZRDSwTVzqGy4pxQKFe",
-              "https://utfs.io/f/630795fghEPY4KQb4M8LonUxzpby6mCNg2fQ3stjYiZIwMEk"
-            ].map((imgSrc, idx) => (
+            {critics.map((imgSrc, idx) => (
               <div
                 key={idx}
                 className="relative w-full rounded-xl overflow-hidden shadow-lg border border-primary/20 bg-card/20 backdrop-blur-sm group cursor-pointer"

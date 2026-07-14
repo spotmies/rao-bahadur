@@ -55,3 +55,10 @@ model CelebrityVideo {
   createdAt DateTime @default(now())
 }
 
+model DynamicImage {
+  id        String   @id @default(uuid())
+  category  String
+  src       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}

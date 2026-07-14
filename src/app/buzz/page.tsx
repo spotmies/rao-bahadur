@@ -8,11 +8,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Lock, Ticket, Popcorn, Smartphone, X } from "lucide-react";
 import { celebs, theories, Celeb } from "@/data/mock";
 import { useState } from "react";
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BuzzPage() {
   const [showBookingOptions, setShowBookingOptions] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+  const { data: letterboxData } = useSWR('/api/admin/images?category=LETTERBOX', fetcher, { refreshInterval: 5000 });
+  const letterboxImages = Array.isArray(letterboxData) && letterboxData.length > 0 
+    ? letterboxData.map(img => img.src) 
+    : Array.from({ length: 15 }).map((_, i) => `https://res.cloudinary.com/uohqyl93/image/upload/raobahadur/event/letterboxd/letterboxd_${i + 1}.jpg`);
 
   return (
     <div className="min-h-screen flex flex-col pt-28 md:pt-40 pb-12 px-4 container mx-auto space-y-24">
@@ -97,8 +104,7 @@ export default function BuzzPage() {
       <div className="space-y-10">
         <h2 className="font-serif text-3xl text-center text-primary">Viral Reactions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {Array.from({ length: 15 }).map((_, i) => {
-            const imgSrc = `https://res.cloudinary.com/uohqyl93/image/upload/raobahadur/event/letterboxd/letterboxd_${i + 1}.jpg`;
+          {letterboxImages.map((imgSrc, i) => {
             return (
               <div
                 key={i}

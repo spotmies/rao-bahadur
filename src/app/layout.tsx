@@ -4,6 +4,7 @@ import "./globals.css";
 import { FloatingBackButton } from "@/components/ui/FloatingBackButton";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -79,6 +80,7 @@ export default function RootLayout({
           <ProgressiveBlur position="bottom" />
           {children}
         </main>
+        <Analytics />
       </body>
     </html>
   );

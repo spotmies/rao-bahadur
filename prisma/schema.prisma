@@ -62,3 +62,19 @@ model DynamicImage {
   order     Int      @default(0)
   createdAt DateTime @default(now())
 }
+
+model DebateRegistration {
+  id             String   @id @default(uuid())
+  fullName       String
+  age            Int
+  contactNumber  String
+  email          String
+  likedFilm      String
+  likedReason    String   @db.Text
+  dislikedReason String   @db.Text
+  inHyderabad    String
+  discussPart    String   @db.Text
+  okayFilmed     String
+  socialHandles  String
+  createdAt      DateTime @default(now())
+}

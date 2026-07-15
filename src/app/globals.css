@@ -216,3 +216,17 @@
 @utility animate-marquee {
   animation: marquee 40s linear infinite;
 }
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-150%) skewX(-15deg);
+  }
+
+  100% {
+    transform: translateX(150%) skewX(-15deg);
+  }
+}
+
+@utility animate-shimmer {
+  animation: shimmer 2.5s infinite;
+}

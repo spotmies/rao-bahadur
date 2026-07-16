@@ -187,6 +187,46 @@ export default function DebatePage() {
     }
   };
 
+  if (isCheckingStatus) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#d4af37]" />
+      </div>
+    );
+  }
+
+  if (!isDebateActive) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#d4af37]/5 rounded-full blur-[120px] pointer-events-none" />
+        
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative z-10 mx-auto flex max-w-md w-full flex-col items-center text-center p-8 rounded-2xl border border-white/5 bg-zinc-950/80 backdrop-blur-xl shadow-2xl"
+        >
+          <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center mb-6">
+            <Users className="w-8 h-8 text-zinc-500" />
+          </div>
+          <h2 className="text-2xl font-semibold tracking-tight text-white mb-3">
+            Registrations Closed
+          </h2>
+          <p className="text-sm text-zinc-400 mb-8 leading-relaxed">
+            Thank you for your interest. We are no longer accepting new registrations for the open debate.
+          </p>
+          <div className="flex flex-col gap-4 w-full mt-2">
+            <Link
+              href="/"
+              className="w-full flex-1 rounded-full bg-[#d4af37] px-4 py-3 text-sm font-bold text-black hover:bg-[#c4a130] transition-colors text-center"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-4 relative overflow-hidden">

@@ -80,6 +80,7 @@ model DebateRegistration {
 }
 
 model DebateSetting {
-  id       String  @id @default("settings")
-  isActive Boolean @default(true)
+  id        String    @id @default("settings")
+  isActive  Boolean   @default(true)
+  closingAt DateTime?
 }

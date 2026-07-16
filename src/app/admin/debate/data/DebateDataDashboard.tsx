@@ -3,24 +3,57 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { DebateRegistration } from "@prisma/client";
-import { Users, Search, Download, LayoutGrid, List, Trash2, CheckSquare } from "lucide-react";
+import { Users, Search, Download, LayoutGrid, List, Trash2, CheckSquare, X } from "lucide-react";
 import { deleteDebateRegistration, bulkDeleteDebateRegistrations, toggleDebateStatus } from "@/app/debate/actions";
 
 export default function DebateDataDashboard({
   initialRegistrations,
   initialIsActive,
+  initialClosingAt,
 }: {
   initialRegistrations: DebateRegistration[];
   initialIsActive: boolean;
+  initialClosingAt: Date | null;
 }) {
   const [registrations, setRegistrations] = useState(initialRegistrations);
   const [isActive, setIsActive] = useState(initialIsActive);
+  const [closingAt, setClosingAt] = useState<Date | null>(initialClosingAt);
+  const [timeLeft, setTimeLeft] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     setRegistrations(initialRegistrations);
     setIsActive(initialIsActive);
-  }, [initialRegistrations, initialIsActive]);
+    setClosingAt(initialClosingAt);
+  }, [initialRegistrations, initialIsActive, initialClosingAt]);
+
+  useEffect(() => {
+    if (!closingAt) {
+      setTimeLeft(null);
+      return;
+    }
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const target = new Date(closingAt).getTime();
+      const diff = target - now;
+
+      if (diff <= 0) {
+        setTimeLeft(null);
+        setClosingAt(null);
+        setIsActive(false);
+        router.refresh();
+      } else {
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+      }
+    };
+
+    updateTimer();
+    const timerId = setInterval(updateTimer, 1000);
+    return () => clearInterval(timerId);
+  }, [closingAt, router]);
 
   useEffect(() => {
     // Poll the server every 5 seconds for new registrations
@@ -39,6 +72,8 @@ export default function DebateDataDashboard({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [showToggleConfirmModal, setShowToggleConfirmModal] = useState(false);
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -55,6 +90,26 @@ export default function DebateDataDashboard({
     } else {
       setSelectedIds(new Set(filteredRegistrations.map((r) => r.id)));
     }
+  };
+
+  const confirmToggleStatus = async () => {
+    setIsTogglingStatus(true);
+    const newStatus = !isActive;
+
+    const startGracePeriod = !newStatus;
+
+    if (startGracePeriod) {
+      setIsActive(true);
+      setClosingAt(new Date(Date.now() + 5 * 60 * 1000));
+    } else {
+      setIsActive(true);
+      setClosingAt(null);
+    }
+
+    await toggleDebateStatus(newStatus, startGracePeriod);
+    router.refresh();
+    setIsTogglingStatus(false);
+    setShowToggleConfirmModal(false);
   };
 
   const confirmBulkDelete = async () => {
@@ -179,12 +234,7 @@ export default function DebateDataDashboard({
           <div className="flex items-center gap-3 bg-zinc-900/50 border border-white/10 rounded-lg p-2 w-fit">
             <span className="text-sm font-medium text-zinc-300">Debate Status:</span>
             <button
-              onClick={async () => {
-                const newStatus = !isActive;
-                setIsActive(newStatus);
-                await toggleDebateStatus(newStatus);
-                router.refresh();
-              }}
+              onClick={() => setShowToggleConfirmModal(true)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4af37] focus:ring-offset-2 focus:ring-offset-black ${isActive ? 'bg-[#d4af37]' : 'bg-zinc-600'
                 }`}
             >
@@ -194,8 +244,27 @@ export default function DebateDataDashboard({
               />
             </button>
             <span className={`text-sm font-semibold ${isActive ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {isActive ? 'Active (Accepting)' : 'Closed'}
+              {isActive ? (closingAt ? 'Closing Soon...' : 'Active (Accepting)') : 'Closed'}
             </span>
+            {timeLeft && (
+              <div className="flex items-center gap-1">
+                <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/20 text-amber-500 border border-amber-500/30 animate-pulse">
+                  {timeLeft}
+                </span>
+                <button
+                  onClick={async () => {
+                    setIsActive(true);
+                    setClosingAt(null);
+                    await toggleDebateStatus(true, false);
+                    router.refresh();
+                  }}
+                  className="p-1 rounded-md text-amber-500 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                  title="Cancel Closing Timer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
@@ -555,6 +624,36 @@ export default function DebateDataDashboard({
                 className="px-4 py-2 rounded-full bg-red-500/10 text-red-500 border border-red-500/30 text-sm font-medium hover:bg-red-500/20 transition-colors disabled:opacity-50"
               >
                 {isBulkDeleting ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Toggle Confirmation Modal */}
+      {showToggleConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-zinc-950 border border-[#d4af37]/30 rounded-2xl shadow-2xl p-6">
+            <h3 className="text-xl font-bold text-white mb-2">Change Debate Status?</h3>
+            <p className="text-zinc-400 text-sm mb-6">
+              {isActive
+                ? 'Are you sure you want to close the debate? A 5-minute timer will start to allow current users to finish.'
+                : 'Are you sure you want to open the debate for registrations?'}
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowToggleConfirmModal(false)}
+                disabled={isTogglingStatus}
+                className="px-4 py-2 rounded-full border border-white/10 text-white text-sm font-medium hover:bg-white/5 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmToggleStatus}
+                disabled={isTogglingStatus}
+                className="px-4 py-2 rounded-full bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/30 text-sm font-medium hover:bg-[#d4af37]/20 transition-colors disabled:opacity-50"
+              >
+                {isTogglingStatus ? "Changing..." : "Confirm"}
               </button>
             </div>
           </div>

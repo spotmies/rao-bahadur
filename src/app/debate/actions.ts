@@ -55,3 +55,29 @@ export async function bulkDeleteDebateRegistrations(ids: string[]) {
     return { success: false, error: "Internal Server Error" };
   }
 }
+
+export async function getDebateStatus() {
+  try {
+    const setting = await prisma.debateSetting.findUnique({
+      where: { id: "settings" },
+    });
+    return setting?.isActive ?? true;
+  } catch (error) {
+    console.error("Failed to get debate status:", error);
+    return true; // Default to true if not found
+  }
+}
+
+export async function toggleDebateStatus(isActive: boolean) {
+  try {
+    await prisma.debateSetting.upsert({
+      where: { id: "settings" },
+      update: { isActive },
+      create: { id: "settings", isActive },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to toggle debate status:", error);
+    return { success: false, error: "Internal Server Error" };
+  }
+}

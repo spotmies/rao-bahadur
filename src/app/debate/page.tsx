@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import { submitDebateRegistration } from "./actions";
-import { Loader2, ArrowLeft } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { submitDebateRegistration, getDebateStatus } from "./actions";
+import { Loader2, ArrowLeft, Users } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 const getWordCount = (text: string) => text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -66,6 +66,22 @@ export default function DebatePage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [countryCode, setCountryCode] = useState("91");
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [isDebateActive, setIsDebateActive] = useState(true);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const active = await getDebateStatus();
+        setIsDebateActive(active);
+      } catch (err) {
+        console.error("Failed to fetch debate status", err);
+      } finally {
+        setIsCheckingStatus(false);
+      }
+    };
+    checkStatus();
+  }, []);
 
   const [socialHandleEntries, setSocialHandleEntries] = useState<{ platform: string; handle: string }[]>([
     { platform: "X/Twitter", handle: "" },

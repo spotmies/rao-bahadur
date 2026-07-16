@@ -4,26 +4,30 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { DebateRegistration } from "@prisma/client";
 import { Users, Search, Download, LayoutGrid, List, Trash2, CheckSquare } from "lucide-react";
-import { deleteDebateRegistration, bulkDeleteDebateRegistrations } from "@/app/debate/actions";
+import { deleteDebateRegistration, bulkDeleteDebateRegistrations, toggleDebateStatus } from "@/app/debate/actions";
 
 export default function DebateDataDashboard({
   initialRegistrations,
+  initialIsActive,
 }: {
   initialRegistrations: DebateRegistration[];
+  initialIsActive: boolean;
 }) {
   const [registrations, setRegistrations] = useState(initialRegistrations);
+  const [isActive, setIsActive] = useState(initialIsActive);
   const router = useRouter();
 
   useEffect(() => {
     setRegistrations(initialRegistrations);
-  }, [initialRegistrations]);
+    setIsActive(initialIsActive);
+  }, [initialRegistrations, initialIsActive]);
 
   useEffect(() => {
     // Poll the server every 5 seconds for new registrations
     const intervalId = setInterval(() => {
       router.refresh();
     }, 5000);
-    
+
     return () => clearInterval(intervalId);
   }, [router]);
 
@@ -159,17 +163,40 @@ export default function DebateDataDashboard({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="w-full max-w-[98%] 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Header section */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-8 space-y-4 xl:space-y-0">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-            <Users className="w-8 h-8 text-[#d4af37]" />
-            Debate Registrations
-          </h1>
-          <p className="mt-2 text-sm text-zinc-400">
-            Total Registrations: {filteredRegistrations.length}
-          </p>
+        <div className="flex flex-col gap-3">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+              <Users className="w-8 h-8 text-[#d4af37]" />
+              Debate Registrations
+            </h1>
+            <p className="mt-2 text-sm text-zinc-400">
+              Total Registrations: {filteredRegistrations.length}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 bg-zinc-900/50 border border-white/10 rounded-lg p-2 w-fit">
+            <span className="text-sm font-medium text-zinc-300">Debate Status:</span>
+            <button
+              onClick={async () => {
+                const newStatus = !isActive;
+                setIsActive(newStatus);
+                await toggleDebateStatus(newStatus);
+                router.refresh();
+              }}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#d4af37] focus:ring-offset-2 focus:ring-offset-black ${isActive ? 'bg-[#d4af37]' : 'bg-zinc-600'
+                }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isActive ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+              />
+            </button>
+            <span className={`text-sm font-semibold ${isActive ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {isActive ? 'Active (Accepting)' : 'Closed'}
+            </span>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
           <div className="flex bg-zinc-900/80 border border-white/10 rounded-lg p-1 hidden sm:flex">
@@ -350,7 +377,7 @@ export default function DebateDataDashboard({
         </div>
       ) : (
         <div className="overflow-x-auto bg-zinc-900/50 border border-white/10 rounded-xl">
-          <table className="w-full text-sm text-left text-zinc-400">
+          <table className="w-full text-sm text-left text-zinc-400 min-w-[1024px]">
             <thead className="text-xs uppercase bg-black/40 text-zinc-500 border-b border-white/10">
               <tr>
                 <th className="px-6 py-4 w-12">
@@ -361,12 +388,12 @@ export default function DebateDataDashboard({
                     className="w-4 h-4 rounded border-zinc-700 bg-zinc-900/50 text-[#d4af37] focus:ring-[#d4af37] focus:ring-offset-zinc-950 transition-all cursor-pointer accent-[#d4af37]"
                   />
                 </th>
-                <th className="px-6 py-4 font-medium tracking-wider">Applicant</th>
-                <th className="px-6 py-4 font-medium tracking-wider">Contact</th>
-                <th className="px-6 py-4 font-medium tracking-wider">Details</th>
-                <th className="px-6 py-4 font-medium tracking-wider">Socials</th>
-                <th className="px-6 py-4 font-medium tracking-wider">Responses</th>
-                <th className="px-6 py-4 font-medium tracking-wider text-right">Actions</th>
+                <th className="px-4 py-4 font-medium tracking-wider w-[15%]">Applicant</th>
+                <th className="px-4 py-4 font-medium tracking-wider w-[10%]">Contact</th>
+                <th className="px-4 py-4 font-medium tracking-wider w-[10%]">Details</th>
+                <th className="px-4 py-4 font-medium tracking-wider w-[15%]">Socials</th>
+                <th className="px-6 py-4 font-medium tracking-wider w-[40%]">Responses</th>
+                <th className="px-4 py-4 font-medium tracking-wider text-right w-20">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -380,42 +407,42 @@ export default function DebateDataDashboard({
                       className="w-4 h-4 rounded border-zinc-700 bg-zinc-900/50 text-[#d4af37] focus:ring-[#d4af37] focus:ring-offset-zinc-950 transition-all cursor-pointer accent-[#d4af37]"
                     />
                   </td>
-                  <td className="px-6 py-4 align-top">
-                    <div className="font-medium text-white">{reg.fullName}</div>
-                    <div>{reg.email}</div>
+                  <td className="px-4 py-4 align-top break-words">
+                    <div className="font-medium text-white break-words">{reg.fullName}</div>
+                    <div className="break-words">{reg.email}</div>
                     <div className="text-xs text-zinc-500 mt-1">
                       {new Date(reg.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} at {new Date(reg.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
                     </div>
                   </td>
-                  <td className="px-6 py-4 align-top">
+                  <td className="px-4 py-4 align-top">
                     <div className="mb-1"><span className="text-zinc-500 text-xs uppercase">Age:</span> <span className="text-white">{reg.age}</span></div>
-                    <div><span className="text-zinc-500 text-xs uppercase">Tel:</span> <span className="text-white">{reg.contactNumber}</span></div>
+                    <div><span className="text-zinc-500 text-xs uppercase">Tel:</span> <span className="text-white whitespace-nowrap">{reg.contactNumber}</span></div>
                   </td>
-                  <td className="px-6 py-4 align-top">
+                  <td className="px-4 py-4 align-top">
                     <div className="mb-1"><span className="text-zinc-500 text-xs uppercase">Hyd:</span> <span className="text-white">{reg.inHyderabad}</span></div>
                     <div className="mb-1"><span className="text-zinc-500 text-xs uppercase">Filmed:</span> <span className="text-white">{reg.okayFilmed}</span></div>
                     <div><span className="text-zinc-500 text-xs uppercase">Liked:</span> <span className={reg.likedFilm === "Yes" ? "text-emerald-400" : "text-rose-400"}>{reg.likedFilm}</span></div>
                   </td>
-                  <td className="px-6 py-4 align-top min-w-[200px]">
+                  <td className="px-4 py-4 align-top break-words">
                     <div className="break-words space-y-1">
-                      {reg.socialHandles.split(', ').map((handle, i) => <div key={i} className="text-white">{handle}</div>)}
+                      {reg.socialHandles.split(', ').map((handle, i) => <div key={i} className="text-white break-all">{handle}</div>)}
                     </div>
                   </td>
-                  <td className="px-6 py-4 align-top max-w-sm">
+                  <td className="px-6 py-4 align-top break-words whitespace-normal">
                     <div className="mb-3">
                       <span className="text-xs uppercase text-zinc-500 block mb-1">Liked Reason</span>
-                      <p className="text-zinc-300 line-clamp-2" title={reg.likedReason}>{reg.likedReason}</p>
+                      <p className="text-zinc-300" title={reg.likedReason}>{reg.likedReason}</p>
                     </div>
                     <div className="mb-3">
                       <span className="text-xs uppercase text-zinc-500 block mb-1">Disliked Reason</span>
-                      <p className="text-zinc-300 line-clamp-2" title={reg.dislikedReason}>{reg.dislikedReason}</p>
+                      <p className="text-zinc-300" title={reg.dislikedReason}>{reg.dislikedReason}</p>
                     </div>
                     <div>
                       <span className="text-xs uppercase text-[#d4af37]/70 block mb-1">Wants to discuss</span>
-                      <p className="text-zinc-200 italic line-clamp-2" title={reg.discussPart}>"{reg.discussPart}"</p>
+                      <p className="text-zinc-200 italic" title={reg.discussPart}>"{reg.discussPart}"</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4 align-top text-right">
+                  <td className="px-4 py-4 align-top text-right">
                     <button
                       onClick={() => handleDelete(reg.id)}
                       className="text-zinc-500 hover:text-red-400 p-1.5 rounded-md hover:bg-white/5 transition-colors"

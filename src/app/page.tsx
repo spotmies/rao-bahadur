@@ -479,6 +479,9 @@ export default function LandingPage() {
     "https://utfs.io/f/630795fghEPY4KQb4M8LonUxzpby6mCNg2fQ3stjYiZIwMEk"
   ];
 
+  const { data: debateStatus } = useSWR('/api/debate/status', fetcher, { refreshInterval: 5000 });
+  const isDebateActive = debateStatus?.isActive ?? true;
+
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       {/* Hero Section */}
@@ -520,35 +523,37 @@ export default function LandingPage() {
               </p>
 
               {/* Live Debate Announcement Banner */}
-              <div className="mt-8 flex justify-center md:justify-start w-full px-2 md:px-0">
-                <Link
-                  href="/debate"
-                  className="group relative overflow-hidden inline-flex items-center gap-2 sm:gap-3 rounded-2xl sm:rounded-full border border-white/10 bg-white/5 p-2 pr-4 sm:p-1.5 sm:pr-4 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-zinc-200 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/20 hover:text-white w-full sm:w-auto max-w-full"
-                >
-                  {/* Shimmer Effect */}
-                  <div className="absolute inset-0 pointer-events-none z-0">
-                    <div className="absolute inset-0 w-full h-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                  </div>
-
-                  <span className="relative z-10 flex-shrink-0 flex items-center justify-center rounded-full bg-red-600 px-2 py-1 sm:px-2.5 sm:py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wide text-white shadow-[0_0_10px_rgba(220,38,38,0.5)]">
-                    Live Debate
-                  </span>
-                  <span className="relative z-10 text-left whitespace-normal leading-snug">
-                    <span className="block sm:inline">Loved it or hated it?</span>
-                    <span className="hidden sm:inline"> </span>
-                    <span className="block sm:inline">Join the Rao Bahadur discussion!</span>
-                  </span>
-                  <svg
-                    className="relative z-10 h-4 w-4 flex-shrink-0 transition-transform group-hover:translate-x-1 ml-auto sm:ml-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
+              {isDebateActive && (
+                <div className="mt-8 flex justify-center md:justify-start w-full px-2 md:px-0">
+                  <Link
+                    href="/debate"
+                    className="group relative overflow-hidden inline-flex items-center gap-2 sm:gap-3 rounded-2xl sm:rounded-full border border-white/10 bg-white/5 p-2 pr-4 sm:p-1.5 sm:pr-4 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-zinc-200 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/20 hover:text-white w-full sm:w-auto max-w-full"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </Link>
-              </div>
+                    {/* Shimmer Effect */}
+                    <div className="absolute inset-0 pointer-events-none z-0">
+                      <div className="absolute inset-0 w-full h-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    </div>
+
+                    <span className="relative z-10 flex-shrink-0 flex items-center justify-center rounded-full bg-red-600 px-2 py-1 sm:px-2.5 sm:py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wide text-white shadow-[0_0_10px_rgba(220,38,38,0.5)]">
+                      Live Debate
+                    </span>
+                    <span className="relative z-10 text-left whitespace-normal leading-snug">
+                      <span className="block sm:inline">Loved it or hated it?</span>
+                      <span className="hidden sm:inline"> </span>
+                      <span className="block sm:inline">Join the Rao Bahadur discussion!</span>
+                    </span>
+                    <svg
+                      className="relative z-10 h-4 w-4 flex-shrink-0 transition-transform group-hover:translate-x-1 ml-auto sm:ml-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
 

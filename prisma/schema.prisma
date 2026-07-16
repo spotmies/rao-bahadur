@@ -78,3 +78,8 @@ model DebateRegistration {
   socialHandles  String
   createdAt      DateTime @default(now())
 }
+
+model DebateSetting {
+  id       String  @id @default("settings")
+  isActive Boolean @default(true)
+}
